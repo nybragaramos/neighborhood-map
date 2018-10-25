@@ -1,25 +1,16 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+/*import logo from './logo.svg';*/
 import './App.css';
+import Map from './components/map/Map'
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <header role="banner" className='header-principal'><h1>Münster City Map</h1></header>
+        <main>
+          <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13}}/>
+        </main>
       </div>
     );
   }
