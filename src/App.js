@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-/*import logo from './logo.svg';*/
+import { render } from 'react-dom';
 import './App.css';
-import Map from './components/map/Map'
+import Map from './components/map/Map';
+import InfoWindow from './components/infoWindow/InfoWindow';
+
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
@@ -13,6 +15,7 @@ class App extends Component {
     super(props);
 
     this.mapLoad = this.mapLoad.bind(this);
+    this.createInfoWindow = this.createInfoWindow.bind(this);
 
     this.state = {
       venues: [], 
@@ -46,6 +49,7 @@ class App extends Component {
   }
 
   markersLoad(map){
+    const infoWindow = new window.google.maps.InfoWindow();
     let ms = this.state.venues.map(content => {
       // Create A Marker
       const marker = new window.google.maps.Marker({
@@ -53,11 +57,30 @@ class App extends Component {
         map: map,
         animation: window.google.maps.Animation.DROP,
         title: content.venue.name
+      });
+
+      marker.addListener('click', () => {
+        this.createInfoWindow(infoWindow, marker, content.venue);
       })
       return marker;
     });
 
     this.setState({markers: ms});
+  }
+
+  createInfoWindow(infoWindow, marker, content) {
+
+    console.log(content);
+    if (infoWindow.marker !== marker) {
+      infoWindow.marker = marker;
+      /*infoWindow.setContent(`<InfoWindow name={content.name}/>`);*/
+      infoWindow.setContent(`<div id="infoWindow" />`);
+      infoWindow.addListener('domready', event => {
+      render(<InfoWindow infoId={content.id} name={content.name}/>, document.getElementById('infoWindow'))
+      })
+      infoWindow.open(marker.map, marker);
+    }
+    
   }
   
   render() {
