@@ -1,4 +1,26 @@
-header {
+* {
+	box-sizing: border-box;
+}
+
+html, 
+body {
+	width: 100vw;
+	height: 100vh;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: sans-serif;
+
+}
+
+.App {
+  height: 100vh;
+  overflow-y: hidden;
+}
+
+/*header {
   background-color: #cf6cd0;
   color: #f7f7f7;
 }
@@ -9,10 +31,11 @@ header {
   text-align: center;
   padding: 8px 16px;
 }
-
+*/
 main {
   width: 100%;
-  height: calc(100vh - 50px);
+  margin-top: 38px;
+  height: calc(100vh - 56px);
 }
 
 h1, h2, h3 {

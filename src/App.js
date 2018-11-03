@@ -5,6 +5,10 @@ import './App.css';
 import Map from './components/map/Map';
 /*import infowindow from './components/infoWindow/InfoWindow';
 */
+import Toolbar from './components/toolbar/Toolbar';
+import SideDrawer from './components/sideDrawer/SideDrawer';
+import Backdrop from './components/backdrop/Backdrop';
+
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
@@ -60,6 +64,9 @@ class App extends Component {
 
     this.mapLoad = this.mapLoad.bind(this);
     this.populateInfoWindow = this.populateInfoWindow.bind(this);
+    this.handleListClick = this.handleListClick.bind(this);
+    this.drawerToggleClickHandler = this.drawerToggleClickHandler.bind(this);
+    this.backdropClickHandler = this.backdropClickHandler.bind(this);
 
     this.state = {
       venues: [], 
@@ -72,7 +79,8 @@ class App extends Component {
         v: "20181025"
       },
       map: null,
-      details: [DETAILS_SAMPLE]
+      details: [DETAILS_SAMPLE],
+      sideDrawerOpen : false
     };
   }
 
@@ -89,6 +97,13 @@ class App extends Component {
     });
   }
 
+  handleListClick(id) {
+    this.searchedMarkerLoad(this.state.map, id);
+    this.setState(prevState => ({
+      sideDrawerOpen: !prevState.sideDrawerOpen
+    }));
+  }
+
   mapLoad(map) {
     this.setState({map: map});
   }
@@ -102,6 +117,7 @@ class App extends Component {
         map: map,
         animation: window.google.maps.Animation.DROP,
         title: content.venue.name,
+        id: content.venue.id
       });
 
       marker.addListener('click', () => {
@@ -109,14 +125,62 @@ class App extends Component {
       })
       return marker;
     });
-
     this.setState({markers: ms});
+  }
+
+  searchedMarkerLoad(map, id) {
+    this.clearMarkers();
+    let markers = this.state.markers.slice();
+    let markerindex = markers.findIndex(function (element,index) {
+      return (element.id === id) ? index : null;
+    });
+
+    if(markers[0].id === id){
+      markerindex = 0;
+    }
+    
+    if(markerindex > -1){
+      markers[markerindex].setMap(map);
+      this.setState({markers: markers});
+      const content = this.state.venues.find(function (element) {
+        return (element.venue.id === id) ? element : null;
+      });
+
+      const infoWindow = new window.google.maps.InfoWindow();
+      this.populateInfoWindow(infoWindow, markers[markerindex], content.venue);
+    }
+  }
+
+  // Removes the markers from the map, but keeps them in the array.
+  clearMarkers() {
+    let clearMarkers = this.state.markers.slice();
+    clearMarkers =  clearMarkers.map(marker => {
+      marker.setMap(null);
+      return marker;
+    });
+
+    this.setState({markers: clearMarkers});
+
+  }
+
+  // Deletes all markers in the array by removing references to them.
+  deleteMarkers() {
+    this.clearMarkers();
+    this.setState({markers: []});
+  }
+
+  showAllMarkers() {
+    let markers = this.state.markers.slice() //copy the array
+    markers = markers.map(marker => {
+      marker.setMap(this.state.map);
+      return marker;
+    }) //execute the manipulations
+    this.setState({markers: markers});
   }
 
 
   populateInfoWindow(infoWindow, marker, content) {
 
-    console.log(this.state.details);
     if (infoWindow.marker !== marker) {
       infoWindow.close();
       infoWindow.setContent('');
@@ -170,16 +234,36 @@ class App extends Component {
           infoWindow.open(marker.map, marker);
         });
       }
-
-/*      marker.map.setCenter(marker.getPosition());
-*/    }
+      // Anima o marker ao clicar
+      marker.setAnimation(window.google.maps.Animation.BOUNCE);
+      setTimeout(function() {
+          marker.setAnimation(null);
+      }, 1000);
+   }
     
+  }
+
+  drawerToggleClickHandler() {
+    this.setState(prevState => ({
+      sideDrawerOpen: !prevState.sideDrawerOpen
+    }));
+  }
+
+  backdropClickHandler() {
+    this.setState({sideDrawerOpen:false});
   }
   
   render() {
+    let backdrop;
+
+    if(this.state.sideDrawerOpen) {
+      backdrop = <Backdrop click={this.backdropClickHandler}/>;
+    }
     return (
       <div className="App">
-        <header role="banner" className='header-principal'><h1>Münster City Map</h1></header>
+        <Toolbar drawerClickHandler={this.drawerToggleClickHandler}/>
+        <SideDrawer venues={this.state.venues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen}/>;
+        {backdrop}
         <main>
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
 }} mapLoad= {this.mapLoad}/>
