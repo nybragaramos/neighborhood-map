@@ -1,6 +1,6 @@
 .side-drawer {
 	height: 100%;
-	background-color: white;
+	background-color: #fefafc;
 	box-shadow: 1px 0px 7px rgba(0,0,0,0.5) ;
 	position: fixed;
 	top: 0;
@@ -23,7 +23,7 @@
 	flex-direction: column;
 	justify-content: center;
 	margin: 0;
-	padding: 16px;
+	padding: 0 16px 16px 16px;
 }
 
 .side-drawer li {
@@ -33,7 +33,7 @@
 
 .side-drawer li:hover,
 .side-drawer li:active {
-	color: red;
+	color: #a51874;
 	cursor: pointer;
 }
 
@@ -41,5 +41,18 @@
 	padding: 8px;
 	margin: 16px 0px 0px 16px;
 	font-size: 1em;
-} 
+}
+
+.radio-group {
+	width: 100%;
+	padding: 8px 8px 8px 0px;
+	border-style: solid;
+  border-width: 0 0 2px 0;
+  border-color: #cf6cd0;
+}
+.radio-option {
+	width: 100%;
+	padding: 8px;
+	font-size: 1.2em;
+}
 

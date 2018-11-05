@@ -63,29 +63,35 @@ class App extends Component {
     this.drawerToggleClickHandler = this.drawerToggleClickHandler.bind(this);
     this.backdropClickHandler = this.backdropClickHandler.bind(this);
     this.handleSearchByName = this.handleSearchByName.bind(this);
+    this.searchType = this.searchType.bind(this);
 
     this.state = {
-      venues: [], 
+      venues: [],
+      entertainment:[],
+      restaurants: [],
+      german: [],
+      asien: [],
+      italian: [],
+      vegetarian: [],
+      nightlife: [],
+      outdoor: [],
+      travel: [],
+      informationCenter: [],
       markers: [],
-      searchParam: {
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        query: "food",
-        near: NEAR,
-        v: "20181025"
-      },
       map: null,
       details: [DETAILS_SAMPLE],
       sideDrawerOpen : false,
       showVenues: [],
       infoWindow: null,
-      query: ''
+      query: '',
+      type: 'MALE'
     };
   }
 
   componentDidMount() {
     let url = new URL(FOURSQUARE_API);
-    url.search = new URLSearchParams(this.state.searchParam);
+
+    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025"});
 
     fetch(url).then(response => response.json())
     .then(data => {
@@ -95,8 +101,7 @@ class App extends Component {
         return place;
       })
       this.sortVenues(venues);
-      this.setState({venues: venues});
-      this.setState({showVenues: venues});
+      this.setState({venues: venues, showVenues: venues, restaurants:venues});
       if(this.state.map){
         this.setState({infoWindow: new window.google.maps.InfoWindow()})
         this.createMarkers(this.state.map);
@@ -121,12 +126,12 @@ class App extends Component {
     }));
   }
 
-  createMarkers(map){
+  createMarkers(){
     let ms = this.state.venues.map(content => {
       // Create A Marker
       const marker = new window.google.maps.Marker({
         position: {lat: content.venue.location.lat , lng: content.venue.location.lng},
-        map: map,
+        map: this.state.map,
         animation: window.google.maps.Animation.DROP,
         title: content.venue.name,
         id: content.venue.id
@@ -294,11 +299,134 @@ class App extends Component {
     this.setState(prevState => ({
       sideDrawerOpen: !prevState.sideDrawerOpen
     }));
-    this.showAllMarkers();
+    this.showAllMarkers(); 
   }
 
   backdropClickHandler() {
     this.setState({sideDrawerOpen:false});
+  }
+
+  searchByType (categoryId){
+    let url = new URL(FOURSQUARE_API);
+    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025"});
+    return fetch(url).then(response => response.json())
+      .then(data => {
+        this.orderVenues(data.response.groups[0].items)
+        let venues = this.orderVenues(data.response.groups[0].items);
+        this.deleteMarkers();
+        this.createMarkers();
+        return venues;
+      });
+  }
+
+  orderVenues(data){
+    data = data.map(place => {
+      place.venue.name = this.capitalizeFirstLetter(place.venue.name);
+      return place;
+    })
+    this.sortVenues(data);
+    this.setState({venues: data, showVenues:data});
+    return data;
+  }
+
+  searchType(event) {
+
+    switch(event) {
+    case 'nightlife':
+      if(this.state.nightlife.length === 0){
+        this.searchByType('4d4b7105d754a06376d81259').then(venues => {
+          this.setState({nightlife: venues});
+        });
+        this.setState({type:event});
+      } else {
+        this.setState({venues: this.state.nightlife, showVenues:this.state.nightlife, type:event});
+        this.deleteMarkers();
+        const that = this;
+        setTimeout(function() {
+          that.createMarkers();
+        }, 0);
+      }
+      break;
+    case 'outdoor':
+      if(this.state.outdoor.length === 0){
+        this.searchByType('4d4b7105d754a06377d81259').then(venues => {
+          this.setState({outdoor: venues});
+        });
+        this.setState({type:event});
+      } else {
+        this.setState({venues: this.state.outdoor, showVenues:this.state.outdoor, type:event});
+        this.deleteMarkers();
+        const that = this;
+        setTimeout(function() {
+          that.createMarkers();
+        }, 0);
+      }
+      break;
+    case 'travel':
+      if(this.state.travel.length === 0){
+        this.searchByType('4d4b7105d754a06379d81259').then(venues => {
+          this.setState({travel: venues});
+        });
+        this.setState({type:event});
+      } else {
+        this.setState({venues: this.state.travel, showVenues:this.state.travel, type:event});
+        this.deleteMarkers();
+        const that = this;
+        setTimeout(function() {
+          that.createMarkers();
+        }, 0);
+      }
+      break;
+    case 'informationCenter':
+      if(this.state.informationCenter.length === 0){
+        this.searchByType('4f4530164b9074f6e4fb00ff').then(venues => {
+          this.setState({informationCenter: venues});
+        });
+        this.setState({type:event});
+      } else {
+        this.setState({venues: this.state.informationCenter, showVenues:this.state.informationCenter, type:event});
+        this.deleteMarkers();
+        const that = this;
+        setTimeout(function() {
+          that.createMarkers();
+        }, 0);
+      }
+      break;
+    default:
+      this.setState({venues: this.state.restaurants, showVenues:this.state.restaurants, type:event});
+      this.deleteMarkers();
+      const that = this;
+      setTimeout(function() {
+        that.createMarkers();
+      }, 0);
+    }
+
+    /*if(event === 'FEMALE') {*/
+    /*  let url = new URL(FOURSQUARE_API);
+      url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId:'4d4b7105d754a06374d81259', v: "20181025"});
+      fetch(url).then(response => response.json())
+      .then(data => {
+        let venues = data.response.groups[0].items;
+        venues = venues.map(place => {
+          place.venue.name = this.capitalizeFirstLetter(place.venue.name);
+          return place;
+        })
+        this.sortVenues(venues);
+        this.setState({venues: venues, showVenues:venues, type:event});
+        this.deleteMarkers();
+        this.createMarkers(this.state.map);
+      });*/
+
+/*      https://api.foursquare.com/v2/venues/explore?
+      ll=40.7,-74&
+      categoryId=4bf58dd8d48988d14e941735
+*/      
+     /* this.setState({showVenues: [], type:event});
+      this.clearMarkers();
+    } else {
+      this.setState({type:'MALE'});
+      this.showAllMarkers();
+    }*/
   }
   
   render() {
@@ -310,7 +438,7 @@ class App extends Component {
     return (
       <div className="App">
         <Toolbar drawerClickHandler={this.drawerToggleClickHandler}/>
-        <SideDrawer values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen} search={this.handleSearchByName} query={this.state.query}/>;
+        <SideDrawer values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen} search={this.handleSearchByName} query={this.state.query} searchType={this.searchType}/>;
         {backdrop}
         <main>
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
