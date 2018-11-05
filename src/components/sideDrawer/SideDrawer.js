@@ -1,12 +1,8 @@
 import React from 'react';
 import './SideDrawer.css'
+import {DebounceInput} from 'react-debounce-input';
 
 const sideDrawer = props => { 	
-	props.venues.sort((function(a, b){
-    if(a.venue.name < b.venue.name) { return -1; }
-    if(a.venue.name > b.venue.name) { return 1; }
-    return 0;
-	}));
 
 	let drawerClasses = 'side-drawer';
 	if (props.show) {
@@ -14,9 +10,16 @@ const sideDrawer = props => {
 	}
 	return (
 		<nav className={drawerClasses}>
+			<DebounceInput
+				className='search-input'
+				placeholder='Search by name'
+        minLength={2}
+        debounceTimeout={300}
+        onChange={event => props.search(event.target.value)} 
+        value={props.query}/>
 			<ul>
-				{props.venues.map(venue => {
-					return(<li key={venue.venue.id} onClick={() => props.handleListClick(venue.venue.id)}>{venue.venue.name}</li>);
+				{props.values.map(value => {
+					return(<li key={value.venue.id} onClick={() => props.handleListClick(value.venue.id)}>{value.venue.name}</li>);
 				})}
 			</ul>
 		</nav>

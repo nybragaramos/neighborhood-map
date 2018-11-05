@@ -67,6 +67,7 @@ class App extends Component {
     this.handleListClick = this.handleListClick.bind(this);
     this.drawerToggleClickHandler = this.drawerToggleClickHandler.bind(this);
     this.backdropClickHandler = this.backdropClickHandler.bind(this);
+    this.searchMarkers = this.searchMarkers.bind(this);
 
     this.state = {
       venues: [], 
@@ -80,7 +81,10 @@ class App extends Component {
       },
       map: null,
       details: [DETAILS_SAMPLE],
-      sideDrawerOpen : false
+      sideDrawerOpen : false,
+      showValues: [],
+      infoWindow: null,
+      query: ''
     };
   }
 
@@ -90,12 +94,33 @@ class App extends Component {
 
     fetch(url).then(response => response.json())
     .then(data => {
-      this.setState({venues: data.response.groups[0].items});
+      let venues = data.response.groups[0].items;
+      venues = venues.map(venue => {
+        venue.venue.name = this.capitalizeFirstLetter(venue.venue.name);
+        return venue;
+      })
+      this.sortVenues(venues);
+      this.setState({venues: venues});
+      this.setState({showValues: venues});
       if(this.state.map){
+        this.setState({infoWindow: new window.google.maps.InfoWindow()})
         this.markersLoad(this.state.map);
       }
     });
   }
+
+  capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  sortVenues(venues){
+    venues.sort((function(a, b){
+    if(a.venue.name < b.venue.name) { return -1; }
+    if(a.venue.name > b.venue.name) { return 1; }
+    return 0;
+    }));
+  }
+  
 
   handleListClick(id) {
     this.searchedMarkerLoad(this.state.map, id);
@@ -109,7 +134,7 @@ class App extends Component {
   }
 
   markersLoad(map){
-    const infoWindow = new window.google.maps.InfoWindow();
+
     let ms = this.state.venues.map(content => {
       // Create A Marker
       const marker = new window.google.maps.Marker({
@@ -121,11 +146,26 @@ class App extends Component {
       });
 
       marker.addListener('click', () => {
-        this.populateInfoWindow(infoWindow, marker, content.venue);
+        this.populateInfoWindow(marker, content.venue);
       })
       return marker;
     });
     this.setState({markers: ms});
+  }
+
+  searchMarkers (event){
+    if(event === ''){
+      this.setState({showValues: this.state.venues, query:''});
+    } else {
+      let showValues = this.state.showValues.slice();
+      let newShowValues = showValues.filter(value => {
+        const name = value.venue.name.toUpperCase();
+        const searchName = event.toUpperCase();
+        return name.includes(searchName);
+      });
+      this.setState({showValues: newShowValues, query:event});
+    }
+    this.showSelectedMarkers();
   }
 
   searchedMarkerLoad(map, id) {
@@ -146,8 +186,7 @@ class App extends Component {
         return (element.venue.id === id) ? element : null;
       });
 
-      const infoWindow = new window.google.maps.InfoWindow();
-      this.populateInfoWindow(infoWindow, markers[markerindex], content.venue);
+      this.populateInfoWindow(markers[markerindex], content.venue);
     }
   }
 
@@ -169,17 +208,43 @@ class App extends Component {
     this.setState({markers: []});
   }
 
-  showAllMarkers() {
+  showSelectedMarkers() {
+    let infoWindow = this.state.infoWindow;
+    infoWindow.close();
+    this.setState({infoWindow: infoWindow});
     let markers = this.state.markers.slice() //copy the array
+    let searched = this.state.showValues.slice();
+
     markers = markers.map(marker => {
-      marker.setMap(this.state.map);
+      const value = searched.find(function (element) {
+      return (element.venue.id === marker.id) ? element : null;
+      });
+      if(value) {
+        marker.setMap(this.state.map);
+      } else {
+        marker.setMap(null);
+      }
       return marker;
     }) //execute the manipulations
     this.setState({markers: markers});
   }
 
+  showAllMarkers() {
+    let infoWindow = this.state.infoWindow;
+    infoWindow.close();
+    this.setState({infoWindow: infoWindow});
+    let markers = this.state.markers.slice() //copy the array
 
-  populateInfoWindow(infoWindow, marker, content) {
+    markers = markers.map(marker => {
+      marker.setMap(this.state.map);
+      return marker;
+    }) //execute the manipulations
+    this.setState({markers: markers, showValues: this.state.venues, query:''});
+  }
+
+
+  populateInfoWindow(marker, content) {
+    let infoWindow = this.state.infoWindow;
 
     if (infoWindow.marker !== marker) {
       infoWindow.close();
@@ -234,6 +299,7 @@ class App extends Component {
           infoWindow.open(marker.map, marker);
         });
       }
+      this.setState({infoWindow: infoWindow});
       // Anima o marker ao clicar
       marker.setAnimation(window.google.maps.Animation.BOUNCE);
       setTimeout(function() {
@@ -247,6 +313,7 @@ class App extends Component {
     this.setState(prevState => ({
       sideDrawerOpen: !prevState.sideDrawerOpen
     }));
+    this.showAllMarkers();
   }
 
   backdropClickHandler() {
@@ -262,7 +329,7 @@ class App extends Component {
     return (
       <div className="App">
         <Toolbar drawerClickHandler={this.drawerToggleClickHandler}/>
-        <SideDrawer venues={this.state.venues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen}/>;
+        <SideDrawer values={this.state.showValues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen} search={this.searchMarkers} query={this.state.query}/>;
         {backdrop}
         <main>
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
