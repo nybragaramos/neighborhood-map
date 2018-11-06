@@ -9,6 +9,7 @@ const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
 const CLIENT_SECRET = "XWO5JGWXXJCJEBHAGHIQEAPCD02Y5THUQLZDLLG1NJW2RUKU";
 const NEAR = 'Münster';
+const RADIUS = '3000';
 
 const DETAILS_SAMPLE = {
   bestPhoto:  {
@@ -91,7 +92,7 @@ class App extends Component {
   componentDidMount() {
     let url = new URL(FOURSQUARE_API);
 
-    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025"});
+    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025", radius: RADIUS});
 
     fetch(url).then(response => response.json())
     .then(data => {
@@ -127,22 +128,53 @@ class App extends Component {
   }
 
   createMarkers(){
+
+    const bounds = new window.google.maps.LatLngBounds();
+    let map = this.state.map;
     let ms = this.state.venues.map(content => {
       // Create A Marker
       const marker = new window.google.maps.Marker({
         position: {lat: content.venue.location.lat , lng: content.venue.location.lng},
-        map: this.state.map,
+        map: map,
         animation: window.google.maps.Animation.DROP,
         title: content.venue.name,
         id: content.venue.id
       });
+
+      bounds.extend(marker.position);
 
       marker.addListener('click', () => {
         this.configInfoWindow(marker, content.venue);
       })
       return marker;
     });
-    this.setState({markers: ms});
+    map.fitBounds(bounds);
+    this.setState({markers: ms, map:map});
+  }
+
+  // Removes the markers from the map, but keeps them in the markers array.
+  clearMarkers() {
+    let clearMarkers = this.state.markers.slice();
+    clearMarkers =  clearMarkers.map(marker => {
+      marker.setMap(null);
+      return marker;
+    });
+
+    this.setState({markers: clearMarkers});
+  }
+
+  // Deletes all markers in the array by removing references to them.
+  deleteMarkers() {
+    this.clearMarkers();
+    this.setState({markers: []});
+  }
+
+  reloadMarkers(){
+    this.deleteMarkers();
+    const that = this;
+    setTimeout(function() {
+      that.createMarkers();
+    }, 0);
   }
 
   /*Handle the click at the menu list*/
@@ -184,23 +216,6 @@ class App extends Component {
       this.setState({showVenues: showVenues, query:event});
     }
     this.showSelectedMarkers();
-  }
-
-  // Removes the markers from the map, but keeps them in the markers array.
-  clearMarkers() {
-    let clearMarkers = this.state.markers.slice();
-    clearMarkers =  clearMarkers.map(marker => {
-      marker.setMap(null);
-      return marker;
-    });
-
-    this.setState({markers: clearMarkers});
-  }
-
-  // Deletes all markers in the array by removing references to them.
-  deleteMarkers() {
-    this.clearMarkers();
-    this.setState({markers: []});
   }
 
   showSelectedMarkers() {
@@ -308,7 +323,7 @@ class App extends Component {
 
   searchByType (categoryId){
     let url = new URL(FOURSQUARE_API);
-    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025"});
+    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025", radius: RADIUS});
     return fetch(url).then(response => response.json())
       .then(data => {
         this.orderVenues(data.response.groups[0].items)
@@ -340,11 +355,7 @@ class App extends Component {
         this.setState({type:event});
       } else {
         this.setState({venues: this.state.nightlife, showVenues:this.state.nightlife, type:event});
-        this.deleteMarkers();
-        const that = this;
-        setTimeout(function() {
-          that.createMarkers();
-        }, 0);
+        this.reloadMarkers();
       }
       break;
     case 'outdoor':
@@ -355,11 +366,7 @@ class App extends Component {
         this.setState({type:event});
       } else {
         this.setState({venues: this.state.outdoor, showVenues:this.state.outdoor, type:event});
-        this.deleteMarkers();
-        const that = this;
-        setTimeout(function() {
-          that.createMarkers();
-        }, 0);
+        this.reloadMarkers();
       }
       break;
     case 'travel':
@@ -370,11 +377,7 @@ class App extends Component {
         this.setState({type:event});
       } else {
         this.setState({venues: this.state.travel, showVenues:this.state.travel, type:event});
-        this.deleteMarkers();
-        const that = this;
-        setTimeout(function() {
-          that.createMarkers();
-        }, 0);
+        this.reloadMarkers();
       }
       break;
     case 'informationCenter':
@@ -385,48 +388,13 @@ class App extends Component {
         this.setState({type:event});
       } else {
         this.setState({venues: this.state.informationCenter, showVenues:this.state.informationCenter, type:event});
-        this.deleteMarkers();
-        const that = this;
-        setTimeout(function() {
-          that.createMarkers();
-        }, 0);
+        this.reloadMarkers();
       }
       break;
     default:
       this.setState({venues: this.state.restaurants, showVenues:this.state.restaurants, type:event});
-      this.deleteMarkers();
-      const that = this;
-      setTimeout(function() {
-        that.createMarkers();
-      }, 0);
+      this.reloadMarkers();
     }
-
-    /*if(event === 'FEMALE') {*/
-    /*  let url = new URL(FOURSQUARE_API);
-      url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId:'4d4b7105d754a06374d81259', v: "20181025"});
-      fetch(url).then(response => response.json())
-      .then(data => {
-        let venues = data.response.groups[0].items;
-        venues = venues.map(place => {
-          place.venue.name = this.capitalizeFirstLetter(place.venue.name);
-          return place;
-        })
-        this.sortVenues(venues);
-        this.setState({venues: venues, showVenues:venues, type:event});
-        this.deleteMarkers();
-        this.createMarkers(this.state.map);
-      });*/
-
-/*      https://api.foursquare.com/v2/venues/explore?
-      ll=40.7,-74&
-      categoryId=4bf58dd8d48988d14e941735
-*/      
-     /* this.setState({showVenues: [], type:event});
-      this.clearMarkers();
-    } else {
-      this.setState({type:'MALE'});
-      this.showAllMarkers();
-    }*/
   }
   
   render() {
