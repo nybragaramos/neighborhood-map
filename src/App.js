@@ -4,6 +4,8 @@ import Map from './components/map/Map';
 import Toolbar from './components/toolbar/Toolbar';
 import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSun, faSuitcase, faCocktail, faUtensils, faInfo} from '@fortawesome/free-solid-svg-icons'
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
@@ -306,7 +308,7 @@ class App extends Component {
       <div>
         <p>${details.id}</p>
         <p>${details.name}</p>
-        <img src=${photo}>
+        <img src=${photo} alt=´facade from ${details.name} ´>
       </div>`);
   }
 
@@ -345,7 +347,6 @@ class App extends Component {
   }
 
   searchType(event) {
-
     switch(event) {
     case 'nightlife':
       if(this.state.nightlife.length === 0){
@@ -417,4 +418,5 @@ class App extends Component {
   }
 }
 
+library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo);
 export default App;

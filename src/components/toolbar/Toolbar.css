@@ -3,7 +3,7 @@
 	top:0;
 	left: 0;
 	width: 100%;
-	background: #cf6cd0;
+	background: #A81E4F;
   height: 56px;
 }
 
@@ -20,7 +20,7 @@
 .toolbar-logo a {
 	text-decoration: none;
 	font-size: 1.5em;
-  color: #f7f7f7;
+  color: #F0F0F3;
 }
 
 .toolbar-navigation-itens ul {
@@ -42,7 +42,7 @@
 .toolbar-navigation-itens a:hover,
 .toolbar-navigation-itens a:active {
 	text-decoration: none;
-  color: #fa923f;
+  color: #EA79B8;
 }
 
 .spacer {

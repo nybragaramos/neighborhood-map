@@ -1,6 +1,7 @@
 import React from 'react';
 import './SideDrawer.css'
 import {DebounceInput} from 'react-debounce-input';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const sideDrawer = props => { 	
 
@@ -10,38 +11,22 @@ const sideDrawer = props => {
 	}
 	return (
 		<nav className={drawerClasses}>
-      <div className='radio-group' onChange={event => props.searchType(event.target.value)}>
-      	<div className='radio-option'>
-      		<input type="radio" value="restaurants" id="restaurants" defaultChecked name="option"/>
-        	<label htmlFor="restaurants">Restaurants</label>
-      	</div>
-        <div className='radio-option'>
-        <input type="radio" value="nightlife" id="nightlife" name="option"/>
-        <label htmlFor="nightlife">Nightlife</label>
-        </div>
-        <div className='radio-option'>
-        <input type="radio" value="outdoor" id="outdoor" name="option"/>
-        <label htmlFor="outdoor">Outdoor</label>
-        </div>
-        <div className='radio-option'>
-        <input type="radio" value="travel" id="travel" name="option"/>
-        <label htmlFor="travel">Travel</label>
-        </div>
-        <div className='radio-option'>
-        <input type="radio" value="informationCenter" id="informationCenter" name="option"/>
-        <label htmlFor="informationCenter">Information Center</label>
-        </div>
-      </div>
+			<button className='options-button' onClick={() => props.searchType("restaurants")} id="restaurants"><FontAwesomeIcon className="icons" icon="utensils" />Restaurants</button>
+			<button className='options-button' onClick={() => props.searchType("nightlife")} id="nightlife"><FontAwesomeIcon className="icons" icon="cocktail" />Nightlife</button>
+			<button className='options-button' onClick={() => props.searchType("outdoor")} id="outdoor"><FontAwesomeIcon className="icons" icon="sun" />Outdoor</button>
+			<button className='options-button' onClick={() => props.searchType("travel")} id="travel"><FontAwesomeIcon className="icons" icon="suitcase" />Travel</button>
+			<button className='options-button' onClick={() => props.searchType("informationCenter")} id="informationCenter"><FontAwesomeIcon className="icons info" icon="info" />Information Center</button>
       <DebounceInput
 				className='search-input'
 				placeholder='Search by name'
         minLength={2}
         debounceTimeout={300}
+        aria-label='Search by name'
         onChange={event => props.search(event.target.value)} 
         value={props.query}/>
-			<ul>
+			<ul tabIndex="0">
 				{props.values.map(value => {
-					return(<li key={value.venue.id} onClick={() => props.handleListClick(value.venue.id)}>{value.venue.name}</li>);
+					return(<li role="button" key={value.venue.id} onClick={() => props.handleListClick(value.venue.id)}>{value.venue.name}</li>);
 				})}
 			</ul>
 		</nav>
