@@ -17,41 +17,6 @@
 	transform: translateX(0);
 }
 
-
-/*.side-drawer input[type="text"] {
-
-  background-color : #FAFAFA; 
-
-}*/
-
-.side-drawer ul {
-	list-style: none;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	margin: 0;
-	padding: 0;
-}
-
-.side-drawer li {
-	color: #A81E4F;
-	padding: 16px;
-	font-size: 1em;
-}
-
-.side-drawer li:hover,
-.side-drawer li:active {
-	background-color: #EA79B8;
-	cursor: pointer;
-}
-
-.search-input {
-	padding: 8px;
-	margin: 16px 0px 0px 16px;
-	font-size: 1em;
-	max-width: 85%;
-}
-
 .options-button {
 	width: 100%;
 	margin: 0;

@@ -4,57 +4,16 @@ import Map from './components/map/Map';
 import Toolbar from './components/toolbar/Toolbar';
 import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
+import SearchList from './components/searchList/SearchList';
+
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faSun, faSuitcase, faCocktail, faUtensils, faInfo} from '@fortawesome/free-solid-svg-icons'
+import { faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars} from '@fortawesome/free-solid-svg-icons'
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
 const CLIENT_SECRET = "XWO5JGWXXJCJEBHAGHIQEAPCD02Y5THUQLZDLLG1NJW2RUKU";
 const NEAR = 'Münster';
 const RADIUS = '3000';
-
-const DETAILS_SAMPLE = {
-  bestPhoto:  {
-    id: "57d145f0cd1044e801c38507",
-    prefix: "https://igx.4sqi.net/img/general/",
-    suffix: "/59727133_2qpuAi6jBe813j_HwI7snB94qiws2wgXSNV0CPoisyo.jpg",
-    visibility: "public"
-  },
-  categories: [ {
-    icon: {
-      prefix: "https://ss3.4sqi.net/img/categories_v2/food/fastfood_",
-      suffix: ".png",
-    },
-    id: "4bf58dd8d48988d16e941735",
-    name: "Restaurante Fast Food",
-    pluralName: "Restaurante Fast Food",
-    shortName: "Fast Food"
-  }],
-  id: "4c15492a8aedd13ae2cd5137",
-  contact: {
-    facebook: "182011465154997",
-    phone: "+492514828393"
-  },
-  location: {
-    addres: "Bohlweg 70-72",
-    cc: "DE",
-    city: "Münster",
-    country: 'Alemanha',
-    formattedAddress: ["Bohlweg 70-72", "48147 Münster", "Alemanha"],
-    lat:'',
-    lng:'',
-    postalCode: "48147",
-    state: "Nordrhein-Westfalen"
-  },
-  name: "Burger King",
-  shortUrl: "http://4sq.com/9c8CPW",
-  url: "http://www.burgerking.de",
-  price: {
-    currency:"€",
-    message: "Barato",
-    tier: 1
-  }
-}
 
 class App extends Component {
   constructor(props) {
@@ -64,9 +23,11 @@ class App extends Component {
     this.configInfoWindow = this.configInfoWindow.bind(this);
     this.handleListClick = this.handleListClick.bind(this);
     this.drawerToggleClickHandler = this.drawerToggleClickHandler.bind(this);
-    this.backdropClickHandler = this.backdropClickHandler.bind(this);
+    this.backdropDrawerHandler = this.backdropDrawerHandler.bind(this);
+    this.backdropListHandler = this.backdropListHandler.bind(this);
     this.handleSearchByName = this.handleSearchByName.bind(this);
     this.searchType = this.searchType.bind(this);
+    this.listDisplayHandler = this.listDisplayHandler.bind(this);
 
     this.state = {
       venues: [],
@@ -82,12 +43,12 @@ class App extends Component {
       informationCenter: [],
       markers: [],
       map: null,
-      details: [DETAILS_SAMPLE],
-      sideDrawerOpen : false,
+      details: [],
+      sideDrawerOpen: false,
       showVenues: [],
       infoWindow: null,
       query: '',
-      type: 'MALE'
+      showList: false
     };
   }
 
@@ -181,6 +142,7 @@ class App extends Component {
 
   /*Handle the click at the menu list*/
   handleListClick(id) {
+    this.setState({showList: false, sideDrawerOpen:true});
     this.clearMarkers();
     let markers = this.state.markers.slice();
     let markerIndex;
@@ -316,11 +278,20 @@ class App extends Component {
     this.setState(prevState => ({
       sideDrawerOpen: !prevState.sideDrawerOpen
     }));
+    this.setState({showList:false});
     this.showAllMarkers(); 
   }
 
-  backdropClickHandler() {
+  backdropDrawerHandler() {
     this.setState({sideDrawerOpen:false});
+  }
+  backdropListHandler() {
+    this.setState({showList:false});
+  }
+
+  listDisplayHandler() {
+    console.log('listDisplayHandler');
+    this.setState({showList:true, sideDrawerOpen:false});
   }
 
   searchByType (categoryId){
@@ -400,16 +371,22 @@ class App extends Component {
   
   render() {
     let backdrop;
+    let serachList;
 
     if(this.state.sideDrawerOpen) {
-      backdrop = <Backdrop click={this.backdropClickHandler}/>;
+      backdrop = <Backdrop click={this.backdropDrawerHandler}/>;
+    }
+    if(this.state.showList){
+      backdrop = <Backdrop click={this.backdropListHandler}/>;
+      serachList = <SearchList values={this.state.showVenues} handleListClick={this.handleListClick}/>;
     }
     return (
       <div className="App">
-        <Toolbar drawerClickHandler={this.drawerToggleClickHandler}/>
-        <SideDrawer values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.sideDrawerOpen} search={this.handleSearchByName} query={this.state.query} searchType={this.searchType}/>;
+        <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler}/>
+        <SideDrawer show={this.state.sideDrawerOpen}  searchType={this.searchType}/>;
         {backdrop}
         <main>
+          {serachList}
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
 }} mapLoad= {this.mapLoad}/>
         </main>
@@ -418,5 +395,5 @@ class App extends Component {
   }
 }
 
-library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo);
+library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars);
 export default App;
