@@ -1,12 +1,7 @@
 import React, { Component } from 'react';
-import { render } from 'react-dom';
 import './Map.css';
 
 class Map extends Component {
-	constructor(props) {
-    super(props);
-    this.onScriptLoad = this.onScriptLoad.bind(this)
-  }
 
   onScriptLoad() {
     const map = new window.google.maps.Map(

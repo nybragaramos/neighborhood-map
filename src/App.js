@@ -6,8 +6,8 @@ import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
 import SearchList from './components/searchList/SearchList';
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars} from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
@@ -31,12 +31,7 @@ class App extends Component {
 
     this.state = {
       venues: [],
-      entertainment:[],
       restaurants: [],
-      german: [],
-      asien: [],
-      italian: [],
-      vegetarian: [],
       nightlife: [],
       outdoor: [],
       travel: [],
@@ -44,6 +39,7 @@ class App extends Component {
       markers: [],
       map: null,
       details: [],
+      hours: [],
       sideDrawerOpen: false,
       showVenues: [],
       infoWindow: null,
@@ -57,7 +53,8 @@ class App extends Component {
 
     url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025", radius: RADIUS});
 
-    fetch(url).then(response => response.json())
+    fetch(url)
+    .then(this.handleRequestErrors)
     .then(data => {
       let venues = data.response.groups[0].items;
       venues = venues.map(place => {
@@ -67,10 +64,20 @@ class App extends Component {
       this.sortVenues(venues);
       this.setState({venues: venues, showVenues: venues, restaurants:venues});
       if(this.state.map){
-        this.setState({infoWindow: new window.google.maps.InfoWindow()})
+        this.setState({infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})})
         this.createMarkers(this.state.map);
       }
+    })
+    .catch(error => {
+        console.log('Request Restaurants Fail', error)
     });
+  }
+
+  handleRequestErrors(response) {
+    if (!response.ok) {
+        throw Error(response.statusText);
+    }
+    return response.json();
   }
 
   mapLoad(map) {
@@ -212,7 +219,7 @@ class App extends Component {
     markers = markers.map(marker => {
       marker.setMap(this.state.map);
       return marker;
-    }) //execute the manipulations
+    })
     this.setState({markers: markers, showVenues: this.state.venues, query:''});
   }
 
@@ -235,15 +242,18 @@ class App extends Component {
       
     if(!details){
       let url = new URL(`https://api.foursquare.com/v2/venues/${content.id}`);
-      url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, v: "20181025"});
+      url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, v: "20181025", locale:'en'});
 
-      fetch(url).then(response => response.json())
-      .then(data => data.response.venue)
+      fetch(url)
+      .then(this.handleRequestErrors)
       .then(data => {
         this.setState(previousState => ({
-          details: [...previousState.details, data]
+          details: [...previousState.details, data.response.venue],
         }));
-        this.setContentInfoWindow(infoWindow,data);
+        this.configInfoWindow(marker, content);
+      }).catch(error => {
+        console.log('Request failed Details', error)
+        this.setContentInfoWindow(infoWindow,null, error);
       });
     } else {
       this.setContentInfoWindow(infoWindow,details);
@@ -259,20 +269,50 @@ class App extends Component {
 
   }
 
-  setContentInfoWindow(infoWindow, details) {
-    let photo = '';
+  setContentInfoWindow(infoWindow, details, error) {
+    let content = '';
+    if(!details){
+      content+= `<p>${error}</p>`
+    } 
+    else {
+      let photo = '';
+      if(details.bestPhoto) {
+        photo= details.bestPhoto.prefix + '208x120' + details.bestPhoto.suffix
+      } else {
+        photo= 'https://via.placeholder.com/208x120.png?text=No+Image'
+      }
 
-    if(details.bestPhoto) {
-      photo= details.bestPhoto.prefix + '100x100' + details.bestPhoto.suffix
+      content = `<div class='info-window'>
+          <img src=${photo} alt=´${details.name} provided by foursquare´>
+          <h2>${details.name}</h2>`;
+
+      if(details.categories[0]){
+        content += `<p>${details.categories[0].shortName}</p>`
+      }
+      content += `<p>${details.location.address}</p>`
+      if(details.contact.phone){
+        content += `<p>${details.contact.phone}</p>`
+      }
+
+      if(details.hours){
+        const timeframes=details.hours.timeframes;
+        content += `<div class='opening'>`;
+        content += `<p class='opening-title'><strong >${details.hours.status}</strong></p>`;
+        timeframes.forEach(openingHours);
+        content += `</div>`
+      }
+
+      content += `</div>`
     }
 
-    infoWindow.setContent(`
-      <div>
-        <p>${details.id}</p>
-        <p>${details.name}</p>
-        <img src=${photo} alt=´facade from ${details.name} ´>
-      </div>`);
+    infoWindow.setContent(content);
+    function openingHours(time) {
+      content += `<p class='opening-days'>${time.days}</p>
+      <p class='opening-hours'>${time.open[0].renderedTime}</p>`;
+    }
   }
+
+  
 
   drawerToggleClickHandler() {
     this.setState(prevState => ({
@@ -290,20 +330,22 @@ class App extends Component {
   }
 
   listDisplayHandler() {
-    console.log('listDisplayHandler');
     this.setState({showList:true, sideDrawerOpen:false});
   }
 
   searchByType (categoryId){
     let url = new URL(FOURSQUARE_API);
     url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025", radius: RADIUS});
-    return fetch(url).then(response => response.json())
+    return fetch(url).then(this.handleRequestErrors)
       .then(data => {
         this.orderVenues(data.response.groups[0].items)
         let venues = this.orderVenues(data.response.groups[0].items);
         this.deleteMarkers();
         this.createMarkers();
         return venues;
+      })
+      .catch(error => {
+        console.log('Request Restaurants Fail', error)
       });
   }
 
@@ -320,7 +362,7 @@ class App extends Component {
   searchType(event) {
 
     this.setState({query:'', showList:false});
-    
+
     switch(event) {
     case 'nightlife':
       if(this.state.nightlife.length === 0){
@@ -398,5 +440,5 @@ class App extends Component {
   }
 }
 
-library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars);
+library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars, faPhone);
 export default App;
