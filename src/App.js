@@ -318,6 +318,9 @@ class App extends Component {
   }
 
   searchType(event) {
+
+    this.setState({query:'', showList:false});
+    
     switch(event) {
     case 'nightlife':
       if(this.state.nightlife.length === 0){

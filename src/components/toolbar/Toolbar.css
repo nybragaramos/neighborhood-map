@@ -1,7 +1,7 @@
 .toolbar {
 	position: fixed;
 	top:0;
-	left: 0;
+	right: 0;
 	width: 100vw;
 	background: #A81E4F;
   height: 56px;
@@ -47,4 +47,19 @@
 
 .spacer {
 	flex: 1;
+}
+
+@media screen and (min-width: 1025px) {
+  .toolbar {
+    width: 80%;
+  }
+  .toolbar-menu {
+  	display: none;
+  }
+  .toolbar-logo {
+  	margin-left: 16px;
+  }
+  .search-input {
+  	width: 160px;
+  }
 }

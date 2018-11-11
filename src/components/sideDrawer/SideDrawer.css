@@ -5,11 +5,11 @@
 	position: fixed;
 	top: 0;
 	left: 0;
-	width: 70%;
+	width: 60%;
 	max-width: 350px;
 	z-index: 200;
 	transform: translateX(-100%);
-	overflow-y: scroll;
+	overflow-y: auto;
 	transition: transform 0.3s ease-out;
 }
 
@@ -33,10 +33,6 @@
   cursor: pointer;
 }
 
-/*#A90A24
-#A81E4F
-#962756
-#EA79B8*/
 .options-button:hover {
 	background-color: #EA79B8
 }
@@ -49,3 +45,16 @@
 .info {
 	margin-right: 16px;
 }
+
+@media screen and (min-width: 1025px) {
+  .side-drawer {
+		max-width: 20%;
+		transform: translateX(0);
+		transition: transform 0.0s;
+	}
+}
+
+/*#A90A24
+#A81E4F
+#962756
+#EA79B8*/
