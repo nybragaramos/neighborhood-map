@@ -1,20 +1,21 @@
 .toolbar {
-	position: fixed;
-	top:0;
-	right: 0;
-	width: 100vw;
-	background: #A81E4F;
+  position: fixed;
+  top:0;
+  right: 0;
+  width: 100vw;
+  background: #A81E4F;
   height: 56px;
 }
 
 .toolbar-navigation {
-	display: flex;
-	height: 100%;
-	align-items: center;
+  display: flex;
+  height: 100%;
+  align-items: center;
 }
 
-.toolbar-menu{
-	background-color: #A81E4F;
+.toolbar-menu,
+.toolbar-search-open {
+  background-color: #A81E4F;
   border: none;
   color: #F0F0F3;
   padding: 12px 16px;
@@ -22,31 +23,38 @@
   cursor: pointer;
 }
 
+.toolbar-logo.close {
+  display: none;
+}
+
 .toolbar-logo a {
-	text-decoration: none;
-	font-size: 1.5em;
+  text-decoration: none;
+  font-size: 1.5em;
   color: #F0F0F3;
 }
 
 .search-input {
-	padding: 4px;
-	font-size: 1em;
-	width: 80px;
-	margin: 0;
-	background-color: #A81E4F;
-	border-width: 0 0 1px 0;
-	margin-right: 16px;
-	color:white;
-	opacity: 0.9; 
+  padding: 6px;
+  font-size: 1.2em;
+  width: calc(100% - 54px);
+  margin: 0;
+  background-color: #A81E4F;
+  border-width: 0 0 1px 0;
+  margin-right: 16px;
+  color:#F0F0F3;
+  opacity: 0.9; 
 }
 
 .search-input::placeholder {
-  color: white;
+  color: #F0F0F3;
   opacity: 0.7; 
 }
 
+.search-input:focus {
+  outline: none;
+}
 .spacer {
-	flex: 1;
+  flex: 1;
 }
 
 @media screen and (min-width: 1025px) {
@@ -54,12 +62,27 @@
     width: 80%;
   }
   .toolbar-menu {
-  	display: none;
+    display: none;
   }
   .toolbar-logo {
-  	margin-left: 16px;
+    margin-left: 16px;
   }
+
+
   .search-input {
-  	width: 160px;
+    width: 40%;
   }
+}
+
+@media screen and (min-width: 768px) {
+  .toolbar-logo.close {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .search-input {
+    width: 50%;
+  }
+
 }

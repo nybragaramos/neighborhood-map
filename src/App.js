@@ -149,7 +149,7 @@ class App extends Component {
 
   /*Handle the click at the menu list*/
   handleListClick(id) {
-    this.setState({showList: false, sideDrawerOpen:true});
+    this.setState({showList: false, query:'', showVenues:this.state.venues, sideDrawerOpen:true});
     this.clearMarkers();
     let markers = this.state.markers.slice();
     let markerIndex;
@@ -325,12 +325,14 @@ class App extends Component {
   backdropDrawerHandler() {
     this.setState({sideDrawerOpen:false});
   }
+
   backdropListHandler() {
-    this.setState({showList:false});
+    this.setState({showList:false, query:'', showVenues: this.state.venues});
   }
 
   listDisplayHandler() {
     this.setState({showList:true, sideDrawerOpen:false});
+    this.showAllMarkers();
   }
 
   searchByType (categoryId){
@@ -416,22 +418,22 @@ class App extends Component {
   
   render() {
     let backdrop;
-    let serachList;
+    let searchList;
 
     if(this.state.sideDrawerOpen) {
       backdrop = <Backdrop click={this.backdropDrawerHandler}/>;
     }
     if(this.state.showList){
       backdrop = <Backdrop click={this.backdropListHandler}/>;
-      serachList = <SearchList values={this.state.showVenues} handleListClick={this.handleListClick}/>;
+      searchList = <SearchList values={this.state.showVenues} handleListClick={this.handleListClick}/>;
     }
     return (
       <div className="App">
-        <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler}/>
+        <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler} showSearch={this.state.showList}/>
         <SideDrawer show={this.state.sideDrawerOpen}  searchType={this.searchType}/>;
         {backdrop}
         <main>
-          {serachList}
+          {searchList}
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
 }} mapLoad= {this.mapLoad}/>
         </main>
