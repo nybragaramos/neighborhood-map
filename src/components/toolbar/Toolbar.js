@@ -3,7 +3,6 @@ import './Toolbar.css';
 import {DebounceInput} from 'react-debounce-input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-
 const Toolbar = props => {
   let search = <button aria-label="open search input" className='toolbar-search-open' onClick={props.display}><FontAwesomeIcon icon="search" /></button>;;
   let logoClasses = 'toolbar-logo';

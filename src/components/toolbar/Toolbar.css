@@ -3,7 +3,7 @@
   top:0;
   right: 0;
   width: 100vw;
-  background: #A81E4F;
+  background: #A41E4D;
   height: 56px;
 }
 
@@ -15,9 +15,9 @@
 
 .toolbar-menu,
 .toolbar-search-open {
-  background-color: #A81E4F;
+  background-color: #A41E4D;
   border: none;
-  color: #F0F0F3;
+  color: #FAFAFA;
   padding: 12px 16px;
   font-size: 24px;
   cursor: pointer;
@@ -30,7 +30,7 @@
 .toolbar-logo a {
   text-decoration: none;
   font-size: 1.5em;
-  color: #F0F0F3;
+  color: #FAFAFA;
 }
 
 .search-input {
@@ -38,21 +38,22 @@
   font-size: 1.2em;
   width: calc(100% - 54px);
   margin: 0;
-  background-color: #A81E4F;
+  background-color: #A41E4D;
   border-width: 0 0 1px 0;
   margin-right: 16px;
-  color:#F0F0F3;
+  color:#FAFAFA;
   opacity: 0.9; 
 }
 
 .search-input::placeholder {
-  color: #F0F0F3;
+  color: #FAFAFA;
   opacity: 0.7; 
 }
 
 .search-input:focus {
   outline: none;
 }
+
 .spacer {
   flex: 1;
 }
@@ -67,7 +68,6 @@
   .toolbar-logo {
     margin-left: 16px;
   }
-
 
   .search-input {
     width: 40%;

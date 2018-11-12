@@ -5,9 +5,8 @@ import Toolbar from './components/toolbar/Toolbar';
 import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
 import SearchList from './components/searchList/SearchList';
-
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
+import { faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
@@ -26,7 +25,7 @@ class App extends Component {
     this.backdropDrawerHandler = this.backdropDrawerHandler.bind(this);
     this.backdropListHandler = this.backdropListHandler.bind(this);
     this.handleSearchByName = this.handleSearchByName.bind(this);
-    this.searchType = this.searchType.bind(this);
+    this.searchCategory = this.searchCategory.bind(this);
     this.listDisplayHandler = this.listDisplayHandler.bind(this);
 
     this.state = {
@@ -44,7 +43,8 @@ class App extends Component {
       showVenues: [],
       infoWindow: null,
       query: '',
-      showList: false
+      showList: false,
+      category: 'restaurants'
     };
   }
 
@@ -286,7 +286,7 @@ class App extends Component {
           <img src=${photo} alt=´${details.name} provided by foursquare´>
           <h2>${details.name}</h2>`;
 
-      if(details.categories[0]){
+      if(details.categories){
         content += `<p>${details.categories[0].shortName}</p>`
       }
       content += `<p>${details.location.address}</p>`
@@ -335,7 +335,7 @@ class App extends Component {
     this.showAllMarkers();
   }
 
-  searchByType (categoryId){
+  searchByCategory (categoryId){
     let url = new URL(FOURSQUARE_API);
     url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025", radius: RADIUS});
     return fetch(url).then(this.handleRequestErrors)
@@ -361,59 +361,59 @@ class App extends Component {
     return data;
   }
 
-  searchType(event) {
+  searchCategory(category) {
 
     this.setState({query:'', showList:false});
 
-    switch(event) {
-    case 'nightlife':
-      if(this.state.nightlife.length === 0){
-        this.searchByType('4d4b7105d754a06376d81259').then(venues => {
-          this.setState({nightlife: venues});
-        });
-        this.setState({type:event});
-      } else {
-        this.setState({venues: this.state.nightlife, showVenues:this.state.nightlife, type:event});
+    switch(category) {
+      case 'nightlife':
+        if(this.state.nightlife.length === 0){
+          this.searchByCategory('4d4b7105d754a06376d81259').then(venues => {
+            this.setState({nightlife: venues});
+          });
+          this.setState({category:category});
+        } else {
+          this.setState({venues: this.state.nightlife, showVenues:this.state.nightlife, category:category});
+          this.reloadMarkers();
+        }
+        break;
+      case 'outdoor':
+        if(this.state.outdoor.length === 0){
+          this.searchByCategory('4d4b7105d754a06377d81259').then(venues => {
+            this.setState({outdoor: venues});
+          });
+          this.setState({category:category});
+        } else {
+          this.setState({venues: this.state.outdoor, showVenues:this.state.outdoor, category:category});
+          this.reloadMarkers();
+        }
+        break;
+      case 'travel':
+        if(this.state.travel.length === 0){
+          this.searchByCategory('4d4b7105d754a06379d81259').then(venues => {
+            this.setState({travel: venues});
+          });
+          this.setState({category:category});
+        } else {
+          this.setState({venues: this.state.travel, showVenues:this.state.travel, category:category});
+          this.reloadMarkers();
+        }
+        break;
+      case 'informationCenter':
+        if(this.state.informationCenter.length === 0){
+          this.searchByCategory('4f4530164b9074f6e4fb00ff').then(venues => {
+            this.setState({informationCenter: venues});
+          });
+          this.setState({category:category});
+        } else {
+          this.setState({venues: this.state.informationCenter, showVenues:this.state.informationCenter, category:category});
+          this.reloadMarkers();
+        }
+        break;
+      default:
+        this.setState({venues: this.state.restaurants, showVenues:this.state.restaurants, category:category});
         this.reloadMarkers();
       }
-      break;
-    case 'outdoor':
-      if(this.state.outdoor.length === 0){
-        this.searchByType('4d4b7105d754a06377d81259').then(venues => {
-          this.setState({outdoor: venues});
-        });
-        this.setState({type:event});
-      } else {
-        this.setState({venues: this.state.outdoor, showVenues:this.state.outdoor, type:event});
-        this.reloadMarkers();
-      }
-      break;
-    case 'travel':
-      if(this.state.travel.length === 0){
-        this.searchByType('4d4b7105d754a06379d81259').then(venues => {
-          this.setState({travel: venues});
-        });
-        this.setState({type:event});
-      } else {
-        this.setState({venues: this.state.travel, showVenues:this.state.travel, type:event});
-        this.reloadMarkers();
-      }
-      break;
-    case 'informationCenter':
-      if(this.state.informationCenter.length === 0){
-        this.searchByType('4f4530164b9074f6e4fb00ff').then(venues => {
-          this.setState({informationCenter: venues});
-        });
-        this.setState({type:event});
-      } else {
-        this.setState({venues: this.state.informationCenter, showVenues:this.state.informationCenter, type:event});
-        this.reloadMarkers();
-      }
-      break;
-    default:
-      this.setState({venues: this.state.restaurants, showVenues:this.state.restaurants, type:event});
-      this.reloadMarkers();
-    }
   }
   
   render() {
@@ -430,17 +430,16 @@ class App extends Component {
     return (
       <div className="App">
         <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler} showSearch={this.state.showList}/>
-        <SideDrawer show={this.state.sideDrawerOpen}  searchType={this.searchType}/>;
+        <SideDrawer show={this.state.sideDrawerOpen}  searchCategory={this.searchCategory} category={this.state.category}/>;
         {backdrop}
         <main>
           {searchList}
-          <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13,         mapTypeControl: false
-}} mapLoad= {this.mapLoad}/>
+          <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13, mapTypeControl: false}} mapLoad= {this.mapLoad}/>
         </main>
       </div>
     );
   }
 }
 
-library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfo, faSearch, faBars, faPhone);
+library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone);
 export default App;

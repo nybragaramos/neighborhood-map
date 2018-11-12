@@ -1,36 +1,36 @@
 
 .search-list {
-	width: fit-content;
-	max-width: 60%;
-	z-index: 200;
-	position: absolute;
-	top:0;
-	right: 0px;
-	height: 100%;
-	overflow-y: auto;
+  width: fit-content;
+  max-width: 60%;
+  z-index: 200;
+  position: absolute;
+  top:0;
+  right: 0px;
+  height: 100%;
+  overflow-y: auto;
 }
 .search-list ul{
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	background-color: #F0F0F3;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: #FAFAFA;
 }
 
 .search-list li {
-	color: #A81E4F;
-	padding: 16px;
-	font-size: 1em;
-	width: 100%;
+  color: #A81E4F;
+  padding: 16px;
+  font-size: 1em;
+  width: 100%;
 }
 
 .search-list li:hover,
 .search-list li:active {
-	background-color: #EA79B8;
-	cursor: pointer;
+  background-color: #D61A8E;
+  color: #FAFAFA;
+  cursor: pointer;
 }
 
 @media screen and (min-width: 1025px) {
-	.search-list {
-
-	}
+  .search-list {
+  }
 }
