@@ -30,11 +30,12 @@ class App extends Component {
 
     this.state = {
       venues: [],
-      restaurants: [],
-      nightlife: [],
-      outdoor: [],
-      travel: [],
-      informationCenter: [],
+      venuesByCategories: {
+        restaurants: [],
+        nightlife: [],
+        outdoor: [],
+        travel: [],
+        informationCenter: []},
       markers: [],
       map: null,
       details: [],
@@ -49,6 +50,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+
     let url = new URL(FOURSQUARE_API);
 
     url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025", radius: RADIUS});
@@ -56,13 +58,14 @@ class App extends Component {
     fetch(url)
     .then(this.handleRequestErrors)
     .then(data => {
+
       let venues = data.response.groups[0].items;
-      venues = venues.map(place => {
-        place.venue.name = this.capitalizeFirstLetter(place.venue.name);
-        return place;
-      })
-      this.sortVenues(venues);
-      this.setState({venues: venues, showVenues: venues, restaurants:venues});
+      venues = this.organizeVenues(venues);
+
+      let venuesByCategories = {...this.state.venuesByCategories};
+      venuesByCategories['restaurants']=venues;
+
+      this.setState({venues: venues, showVenues: venues, venuesByCategories: venuesByCategories});
       if(this.state.map){
         this.setState({infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})})
         this.createMarkers(this.state.map);
@@ -82,6 +85,16 @@ class App extends Component {
 
   mapLoad(map) {
     this.setState({map: map});
+  }
+
+  organizeVenues(data){
+    data = data.map(place => {
+      place.venue.name = this.capitalizeFirstLetter(place.venue.name);
+      return place;
+    })
+    this.sortVenues(data);
+    this.setState({venues: data, showVenues:data});
+    return data;
   }
 
   capitalizeFirstLetter(string) {
@@ -340,8 +353,7 @@ class App extends Component {
     url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025", radius: RADIUS});
     return fetch(url).then(this.handleRequestErrors)
       .then(data => {
-        this.orderVenues(data.response.groups[0].items)
-        let venues = this.orderVenues(data.response.groups[0].items);
+        let venues = this.organizeVenues(data.response.groups[0].items);
         this.deleteMarkers();
         this.createMarkers();
         return venues;
@@ -351,69 +363,22 @@ class App extends Component {
       });
   }
 
-  orderVenues(data){
-    data = data.map(place => {
-      place.venue.name = this.capitalizeFirstLetter(place.venue.name);
-      return place;
-    })
-    this.sortVenues(data);
-    this.setState({venues: data, showVenues:data});
-    return data;
-  }
-
-  searchCategory(category) {
+  searchCategory(id, name) {
 
     this.setState({query:'', showList:false});
 
-    switch(category) {
-      case 'nightlife':
-        if(this.state.nightlife.length === 0){
-          this.searchByCategory('4d4b7105d754a06376d81259').then(venues => {
-            this.setState({nightlife: venues});
-          });
-          this.setState({category:category});
-        } else {
-          this.setState({venues: this.state.nightlife, showVenues:this.state.nightlife, category:category});
-          this.reloadMarkers();
-        }
-        break;
-      case 'outdoor':
-        if(this.state.outdoor.length === 0){
-          this.searchByCategory('4d4b7105d754a06377d81259').then(venues => {
-            this.setState({outdoor: venues});
-          });
-          this.setState({category:category});
-        } else {
-          this.setState({venues: this.state.outdoor, showVenues:this.state.outdoor, category:category});
-          this.reloadMarkers();
-        }
-        break;
-      case 'travel':
-        if(this.state.travel.length === 0){
-          this.searchByCategory('4d4b7105d754a06379d81259').then(venues => {
-            this.setState({travel: venues});
-          });
-          this.setState({category:category});
-        } else {
-          this.setState({venues: this.state.travel, showVenues:this.state.travel, category:category});
-          this.reloadMarkers();
-        }
-        break;
-      case 'informationCenter':
-        if(this.state.informationCenter.length === 0){
-          this.searchByCategory('4f4530164b9074f6e4fb00ff').then(venues => {
-            this.setState({informationCenter: venues});
-          });
-          this.setState({category:category});
-        } else {
-          this.setState({venues: this.state.informationCenter, showVenues:this.state.informationCenter, category:category});
-          this.reloadMarkers();
-        }
-        break;
-      default:
-        this.setState({venues: this.state.restaurants, showVenues:this.state.restaurants, category:category});
-        this.reloadMarkers();
-      }
+    if(this.state.venuesByCategories[name].length === 0){
+      this.searchByCategory(id)
+      .then(venues => {
+        let venuesByCategories = {...this.state.venuesByCategories};
+        venuesByCategories[name]=venues;
+        this.setState({venuesByCategories: venuesByCategories});
+      });
+      this.setState({category:name});
+    } else {
+      this.setState({venues: this.state.venuesByCategories[name], showVenues:this.state.venuesByCategories[name], category:name});
+      this.reloadMarkers();
+    }
   }
   
   render() {
@@ -434,7 +399,7 @@ class App extends Component {
         {backdrop}
         <main>
           {searchList}
-          <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 13, mapTypeControl: false}} mapLoad= {this.mapLoad}/>
+          <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 14, mapTypeControl: false}} mapLoad= {this.mapLoad}/>
         </main>
       </div>
     );
