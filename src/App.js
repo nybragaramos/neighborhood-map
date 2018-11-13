@@ -25,57 +25,31 @@ class App extends Component {
     this.backdropDrawerHandler = this.backdropDrawerHandler.bind(this);
     this.backdropListHandler = this.backdropListHandler.bind(this);
     this.handleSearchByName = this.handleSearchByName.bind(this);
-    this.searchCategory = this.searchCategory.bind(this);
+    this.searchByCategory = this.searchByCategory.bind(this);
     this.listDisplayHandler = this.listDisplayHandler.bind(this);
 
     this.state = {
+      venuesByCategories: {},
       venues: [],
-      venuesByCategories: {
-        restaurants: [],
-        nightlife: [],
-        outdoor: [],
-        travel: [],
-        informationCenter: []},
+      showVenues: [],
+      details: [],
       markers: [],
       map: null,
-      details: [],
-      hours: [],
       sideDrawerOpen: false,
-      showVenues: [],
       infoWindow: null,
-      query: '',
       showList: false,
+      query: '',
       category: 'restaurants'
     };
   }
-
-  componentDidMount() {
-
-    let url = new URL(FOURSQUARE_API);
-
-    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, categoryId: '4bf58dd8d48988d1c4941735', near: NEAR, v: "20181025", radius: RADIUS});
-
-    fetch(url)
-    .then(this.handleRequestErrors)
-    .then(data => {
-
-      let venues = data.response.groups[0].items;
-      venues = this.organizeVenues(venues);
-
-      let venuesByCategories = {...this.state.venuesByCategories};
-      venuesByCategories['restaurants']=venues;
-
-      this.setState({venues: venues, showVenues: venues, venuesByCategories: venuesByCategories});
-      if(this.state.map){
-        this.setState({infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})})
-        this.createMarkers(this.state.map);
-      }
-    })
-    .catch(error => {
-        console.log('Request Restaurants Fail', error)
-    });
+  
+  // Load Map with restaurants markers
+  mapLoad(map) {
+    this.setState({map: map, infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})});
+    this.searchByCategory('4bf58dd8d48988d1c4941735', 'restaurants');
   }
 
+  // Handle fetch request erros
   handleRequestErrors(response) {
     if (!response.ok) {
         throw Error(response.statusText);
@@ -83,35 +57,22 @@ class App extends Component {
     return response.json();
   }
 
-  mapLoad(map) {
-    this.setState({map: map});
-  }
-
-  organizeVenues(data){
-    data = data.map(place => {
-      place.venue.name = this.capitalizeFirstLetter(place.venue.name);
-      return place;
+  // order venues for the first letter of the name
+  orderVenues(data){
+    data = data.map(venue => {
+      const name = venue.venue.name;
+      venue.venue.name = name.charAt(0).toUpperCase() + name.slice(1);
+      return venue;
     })
-    this.sortVenues(data);
+    data.sort((function(a, b){
+        return (a.venue.name <= b.venue.name ? -1 : 1);
+      }));
     this.setState({venues: data, showVenues:data});
     return data;
   }
 
-  capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-
-  /*Sort venues by name*/
-  sortVenues(venues){
-    venues.sort((function(a, b){
-    if(a.venue.name < b.venue.name) { return -1; }
-    if(a.venue.name > b.venue.name) { return 1; }
-    return 0;
-    }));
-  }
-
+  // Create new markers
   createMarkers(){
-
     const bounds = new window.google.maps.LatLngBounds();
     let map = this.state.map;
     let ms = this.state.venues.map(content => {
@@ -152,6 +113,7 @@ class App extends Component {
     this.setState({markers: []});
   }
 
+  // Recreate markers
   reloadMarkers(){
     this.deleteMarkers();
     const that = this;
@@ -160,13 +122,16 @@ class App extends Component {
     }, 0);
   }
 
-  /*Handle the click at the menu list*/
+  /*Handle the click at the venues list*/
   handleListClick(id) {
+
+    //close the list
     this.setState({showList: false, query:'', showVenues:this.state.venues, sideDrawerOpen:true});
+
+    
     this.clearMarkers();
     let markers = this.state.markers.slice();
     let markerIndex;
-
     /*search marker with the designated id*/
     for(markerIndex=0; markerIndex<markers.length; markerIndex++){
       if(markers[markerIndex].id === id){
@@ -206,9 +171,11 @@ class App extends Component {
     let infoWindow = this.state.infoWindow;
     infoWindow.close();
     this.setState({infoWindow: infoWindow});
-    let markers = this.state.markers.slice() //copy the array
+
+    let markers = this.state.markers.slice() 
     let searched = this.state.showVenues.slice();
 
+    //show only the markers from the venues that are in the search list
     markers = markers.map(marker => {
       const value = searched.find(function (element) {
       return (element.venue.id === marker.id) ? element : null;
@@ -219,7 +186,7 @@ class App extends Component {
         marker.setMap(null);
       }
       return marker;
-    }) //execute the manipulations
+    }) 
     this.setState({markers: markers});
   }
 
@@ -296,8 +263,8 @@ class App extends Component {
       }
 
       content = `<div class='info-window'>
-          <img src=${photo} alt=´${details.name} provided by foursquare´>
-          <h2>${details.name}</h2>`;
+                 <img src=${photo} alt=´${details.name} provided by foursquare´>
+                 <h2>${details.name}</h2>`;
 
       if(details.categories){
         content += `<p>${details.categories[0].shortName}</p>`
@@ -325,8 +292,6 @@ class App extends Component {
     }
   }
 
-  
-
   drawerToggleClickHandler() {
     this.setState(prevState => ({
       sideDrawerOpen: !prevState.sideDrawerOpen
@@ -348,36 +313,29 @@ class App extends Component {
     this.showAllMarkers();
   }
 
-  searchByCategory (categoryId){
-    let url = new URL(FOURSQUARE_API);
-    url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: categoryId, v: "20181025", radius: RADIUS});
-    return fetch(url).then(this.handleRequestErrors)
-      .then(data => {
-        let venues = this.organizeVenues(data.response.groups[0].items);
-        this.deleteMarkers();
-        this.createMarkers();
-        return venues;
-      })
-      .catch(error => {
-        console.log('Request Restaurants Fail', error)
-      });
-  }
-
-  searchCategory(id, name) {
-
-    this.setState({query:'', showList:false});
-
-    if(this.state.venuesByCategories[name].length === 0){
-      this.searchByCategory(id)
-      .then(venues => {
-        let venuesByCategories = {...this.state.venuesByCategories};
-        venuesByCategories[name]=venues;
-        this.setState({venuesByCategories: venuesByCategories});
-      });
-      this.setState({category:name});
-    } else {
+  searchByCategory(id, name) {
+    this.setState({query:'', showList:false, category:name});
+    /*Check if the category already exists, if true*/
+    if(this.state.venuesByCategories.hasOwnProperty(name) && this.state.venuesByCategories[name].length !== 0){
       this.setState({venues: this.state.venuesByCategories[name], showVenues:this.state.venuesByCategories[name], category:name});
       this.reloadMarkers();
+    } else {
+      let venuesByCategories= {...this.state.venuesByCategories};
+      venuesByCategories[name] = [];
+      let url = new URL(FOURSQUARE_API);
+      url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, near:NEAR, categoryId: id, v: "20181025", radius: RADIUS});
+      fetch(url)
+        .then(this.handleRequestErrors)
+        .then(data => {
+          let venues = this.orderVenues(data.response.groups[0].items);
+          this.deleteMarkers();
+          this.createMarkers();
+          venuesByCategories[name]=venues;
+          this.setState({venuesByCategories: venuesByCategories});
+        })
+        .catch(error => {
+          console.log('Request By Category Fail', error)
+        });
     }
   }
   
@@ -395,7 +353,7 @@ class App extends Component {
     return (
       <div className="App">
         <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler} showSearch={this.state.showList}/>
-        <SideDrawer show={this.state.sideDrawerOpen}  searchCategory={this.searchCategory} category={this.state.category}/>;
+        <SideDrawer show={this.state.sideDrawerOpen}  searchByCategory={this.searchByCategory} category={this.state.category}/>;
         {backdrop}
         <main>
           {searchList}

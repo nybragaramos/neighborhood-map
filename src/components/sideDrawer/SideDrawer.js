@@ -2,7 +2,7 @@ import React from 'react';
 import './SideDrawer.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const sideDrawer = props => {   
+const sideDrawer = props => {  
 
   let drawerClasses = 'side-drawer';
   if (props.show) {
@@ -16,9 +16,9 @@ const sideDrawer = props => {
   return (
     <nav className={drawerClasses}>
       {categories.map(category => {
-        if(category.id === props.category)
-          return <button className='options-button clicked' onClick={() => props.searchCategory(category.id, category.name)} key={category.id}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
-        return <button className='options-button' onClick={() => props.searchCategory(category.id, category.name)} key={category.id}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
+        if(category.name === props.category)
+          return <button className='options-button clicked' onClick={() => props.searchByCategory(category.id, category.name)} key={category.id}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
+        return <button className='options-button' onClick={() => props.searchByCategory(category.id, category.name)} key={category.id}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
       })}
     </nav>
   );}
