@@ -190,19 +190,20 @@ class App extends Component {
     infoWindow.close();
     this.setState({infoWindow: infoWindow});
 
-    let markers = this.state.markers.slice(); 
-    markers = markers.map(marker => {
-      marker.setMap(this.state.map);
-      return marker;
-    })
+    let markers = this.state.markers.slice();
+    
+    const noMap = markers.filter(marker => marker.getMap() === null);
 
-
-    if(markers.length === this.state.markers.length && markers.every((value, index) => value === this.state.markers[index])){
-      console.log('igual')
+    //markers with null map need to be add to the map
+    if(noMap.length > 0){
+      markers = markers.map(marker => {
+        marker.setMap(this.state.map);
+        return marker;
+      })
+      this.setState({markers: markers, showVenues: this.state.venues, query:''});
     } else {
-      console.log('diferente');
-    }
-    this.setState({markers: markers, showVenues: this.state.venues, query:''});
+      this.setState({query:''});
+    }    
   }
 
   configInfoWindow(marker, content) {
