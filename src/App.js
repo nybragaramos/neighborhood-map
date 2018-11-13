@@ -22,8 +22,8 @@ class App extends Component {
     this.configInfoWindow = this.configInfoWindow.bind(this);
     this.handleListClick = this.handleListClick.bind(this);
     this.drawerToggleClickHandler = this.drawerToggleClickHandler.bind(this);
-    this.backdropDrawerHandler = this.backdropDrawerHandler.bind(this);
-    this.backdropListHandler = this.backdropListHandler.bind(this);
+    this.backdropDrawer = this.backdropDrawer.bind(this);
+    this.backdropList = this.backdropList.bind(this);
     this.handleSearchByName = this.handleSearchByName.bind(this);
     this.searchByCategory = this.searchByCategory.bind(this);
     this.listDisplayHandler = this.listDisplayHandler.bind(this);
@@ -125,9 +125,7 @@ class App extends Component {
   /*Handle the click at the venues list*/
   handleListClick(id) {
 
-    //close the list
-    this.setState({showList: false, query:'', showVenues:this.state.venues, sideDrawerOpen:true});
-
+    this.backdropList();
     
     this.clearMarkers();
     let markers = this.state.markers.slice();
@@ -147,9 +145,6 @@ class App extends Component {
       });
       this.configInfoWindow(markers[markerIndex], content.venue);
     }
-    this.setState(prevState => ({
-      sideDrawerOpen: !prevState.sideDrawerOpen
-    }));
   }
 
   handleSearchByName (event){
@@ -195,11 +190,18 @@ class App extends Component {
     infoWindow.close();
     this.setState({infoWindow: infoWindow});
 
-    let markers = this.state.markers.slice() 
+    let markers = this.state.markers.slice(); 
     markers = markers.map(marker => {
       marker.setMap(this.state.map);
       return marker;
     })
+
+
+    if(markers.length === this.state.markers.length && markers.every((value, index) => value === this.state.markers[index])){
+      console.log('igual')
+    } else {
+      console.log('diferente');
+    }
     this.setState({markers: markers, showVenues: this.state.venues, query:''});
   }
 
@@ -300,12 +302,18 @@ class App extends Component {
     this.showAllMarkers(); 
   }
 
-  backdropDrawerHandler() {
+  backdropDrawer() {
     this.setState({sideDrawerOpen:false});
   }
 
-  backdropListHandler() {
-    this.setState({showList:false, query:'', showVenues: this.state.venues});
+  backdropList() {
+    //close the list
+    this.setState({showList: false, query:''});
+
+    const that = this;
+    setTimeout(function() {
+      that.setState({showVenues:that.state.venues});
+    }, 300);
   }
 
   listDisplayHandler() {
@@ -341,13 +349,12 @@ class App extends Component {
   
   render() {
     let backdrop;
-    let searchList;
 
     if(this.state.sideDrawerOpen) {
-      backdrop = <Backdrop click={this.backdropDrawerHandler}/>;
+      backdrop = <Backdrop click={this.backdropDrawer}/>;
     }
     if(this.state.showList){
-      backdrop = <Backdrop click={this.backdropListHandler}/>;
+      backdrop = <Backdrop click={this.backdropList}/>;
     }
     return (
       <div className="App">
