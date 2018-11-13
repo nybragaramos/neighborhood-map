@@ -230,7 +230,7 @@ class App extends Component {
         this.setState(previousState => ({
           details: [...previousState.details, data.response.venue],
         }));
-        this.configInfoWindow(marker, content);
+        this.setContentInfoWindow(infoWindow, data.response.venue);
       }).catch(error => {
         console.log('Request failed Details', error)
         this.setContentInfoWindow(infoWindow,null, error);
