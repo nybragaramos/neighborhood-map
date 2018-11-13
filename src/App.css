@@ -68,6 +68,11 @@ h1, h2, h3 {
   width: 60%;
 }
 
+button.gm-ui-hover-effect img {
+  height: 16px !important;
+  width: 16px !important;
+}
+
 @media screen and (min-width: 1025px) {
   main {
     width: 80%;
@@ -79,3 +84,17 @@ h1, h2, h3 {
     width: 167px;
   }
 }
+
+/*#A90A24
+#A41E4D
+#A81E4F
+#962756
+#EA79B8
+#A1126A
+#C1227A
+#D61A8E
+#EA79B8
+#F7BBD9
+#701033
+#121212
+#79C6D2*/
