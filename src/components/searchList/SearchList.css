@@ -3,12 +3,19 @@
   width: fit-content;
   max-width: 60%;
   z-index: 200;
-  position: absolute;
-  top:0;
+  position: fixed;
+  top:56px;
   right: 0px;
   height: 100%;
   overflow-y: auto;
+  transform: translateX(100%); 
+  transition: transform 0.3s linear;
 }
+
+.search-list.open {
+  transform: translateX(0); 
+}
+
 .search-list ul{
   list-style: none;
   margin: 0;

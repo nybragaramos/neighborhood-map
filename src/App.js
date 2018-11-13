@@ -314,7 +314,7 @@ class App extends Component {
   }
 
   searchByCategory(id, name) {
-    this.setState({query:'', showList:false, category:name});
+    this.setState({query:'', showList:false, category:name, sideDrawerOpen: false});
     /*Check if the category already exists, if true*/
     if(this.state.venuesByCategories.hasOwnProperty(name) && this.state.venuesByCategories[name].length !== 0){
       this.setState({venues: this.state.venuesByCategories[name], showVenues:this.state.venuesByCategories[name], category:name});
@@ -348,7 +348,6 @@ class App extends Component {
     }
     if(this.state.showList){
       backdrop = <Backdrop click={this.backdropListHandler}/>;
-      searchList = <SearchList values={this.state.showVenues} handleListClick={this.handleListClick}/>;
     }
     return (
       <div className="App">
@@ -356,7 +355,7 @@ class App extends Component {
         <SideDrawer show={this.state.sideDrawerOpen}  searchByCategory={this.searchByCategory} category={this.state.category}/>;
         {backdrop}
         <main>
-          {searchList}
+          <SearchList values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.showList}/>
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 14, mapTypeControl: false}} mapLoad= {this.mapLoad}/>
         </main>
       </div>

@@ -1,5 +1,5 @@
 .toolbar {
-  position: fixed;
+  position: absolute;
   top:0;
   right: 0;
   width: 100vw;
@@ -24,7 +24,7 @@
 }
 
 .toolbar-logo.close {
-  display: none;
+  display: none
 }
 
 .toolbar-logo a {
