@@ -14,7 +14,7 @@
 }
 
 .toolbar-menu,
-.toolbar-search-open {
+.toolbar-search-icon {
   background-color: #A41E4D;
   border: none;
   color: #FAFAFA;
@@ -23,34 +23,47 @@
   cursor: pointer;
 }
 
+.toolbar-search-icon.close {
+  display: none;
+}
+
 .toolbar-logo.close {
-  display: none
+  width: 0;
 }
 
-.toolbar-logo a {
-  text-decoration: none;
+.toolbar-logo h1{
   font-size: 1.5em;
+  font-weight: 300;
   color: #FAFAFA;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.search-input {
+.toolbar-search-input.open {
   padding: 6px;
   font-size: 1.2em;
   width: calc(100% - 54px);
   margin: 0;
-  background-color: #A41E4D;
   border-width: 0 0 1px 0;
   margin-right: 16px;
   color:#FAFAFA;
-  opacity: 0.9; 
+  opacity: 0.9;
+  transition: width 0.4s linear;
+
 }
 
-.search-input::placeholder {
+.toolbar-search-input {
+  width: 0;
+  border-width: 0;
+  background-color: #A41E4D;
+}
+
+.toolbar-search-input::placeholder {
   color: #FAFAFA;
   opacity: 0.7; 
 }
 
-.search-input:focus {
+.toolbar-search-input:focus {
   outline: none;
 }
 
@@ -69,7 +82,7 @@
     margin-left: 16px;
   }
 
-  .search-input {
+  .toolbar-search-input.open {
     width: 40%;
   }
 }
@@ -78,10 +91,14 @@
   .toolbar-logo.close {
     display: block;
   }
+  .toolbar-logo.close {
+    width: fit-content;
+  }
+
 }
 
 @media screen and (min-width: 768px) and (max-width: 1024px) {
-  .search-input {
+  .toolbar-search-input.open {
     width: 50%;
   }
 
