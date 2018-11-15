@@ -6,6 +6,7 @@ import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
 import SearchList from './components/searchList/SearchList';
 import { library } from '@fortawesome/fontawesome-svg-core';
+import { fab, faFoursquare } from '@fortawesome/free-brands-svg-icons'
 import { faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
 
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
@@ -366,5 +367,5 @@ class App extends Component {
   }
 }
 
-library.add(faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone);
+library.add(fab, faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone, faFoursquare);
 export default App;

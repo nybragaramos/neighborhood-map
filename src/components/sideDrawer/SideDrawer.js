@@ -20,7 +20,9 @@ const sideDrawer = props => {
           return <button className='options-button clicked' onClick={() => props.searchByCategory(category.id, category.name)} key={category.id} aria-label={category.label}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
         return <button className='options-button' onClick={() => props.searchByCategory(category.id, category.name)} key={category.id} aria-label={category.label}><FontAwesomeIcon className="side-drawer-icons" icon={category.icon}/>{category.label}</button>
       })}
-      
+      <div className='foursquare'>
+        <a  href="https://de.foursquare.com/" aria-label='Powered by foursquare'>Powered by <FontAwesomeIcon className="foursquare-icon" icon={['fab', 'foursquare']}/></a>
+        </div>
     </nav>
   );}
 
