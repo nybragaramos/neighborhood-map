@@ -310,15 +310,10 @@ class App extends Component {
   backdropList() {
     //close the list
     this.setState({showList: false, query:''});
-
-    const that = this;
-    setTimeout(function() {
-      that.setState({showVenues:that.state.venues});
-    }, 300);
   }
 
   listDisplayHandler() {
-    this.setState({showList:true, sideDrawerOpen:false});
+    this.setState({showList:true, sideDrawerOpen:false, showVenues:this.state.venues});
     this.showAllMarkers();
   }
 
@@ -360,7 +355,7 @@ class App extends Component {
     return (
       <div className="App">
         <Toolbar drawerClickHandler={this.drawerToggleClickHandler} search={this.handleSearchByName} query={this.state.query} display={this.listDisplayHandler} showSearch={this.state.showList}/>
-        <SideDrawer show={this.state.sideDrawerOpen}  searchByCategory={this.searchByCategory} category={this.state.category}/>;
+        <SideDrawer show={this.state.sideDrawerOpen}  searchByCategory={this.searchByCategory} category={this.state.category}/>
         {backdrop}
         <main>
           <SearchList values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.showList}/>
