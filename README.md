@@ -19,19 +19,19 @@ The goal of the project was to use React, the Google Maps API, plus data from a 
 
 ## Live APP
 
-[CLICK TO TRY IT OUT!](http://muenster-neighborhood-map.herokuapp.com/)
+[CLICK TO TRY IT OUT!](https://nybragaramos.github.io/neighborhood-map/)
 
 ## Important
 This application uses API's from Google maps and Foursquare, and developer free plans are only limited to a certain number of requests per day so you may experience not being able to load content. Note: The service worker is only functional in production mode (try it on the hosted site).
 
 ## Project Tools
 
-[Create ReactApp](https://github.com/facebook/create-react-app)
-[Yarn](https://yarnpkg.com/)
-[Google Maps API](https://developers.google.com/maps/documentation/javascript/tutorial)
-[Foursquare API](https://developer.foursquare.com/)
-[Font Awesome](https://github.com/FortAwesome/react-fontawesome)
-[React-Debounce-Input](https://github.com/nkbt/react-debounce-input)
+ [Create ReactApp](https://github.com/facebook/create-react-app)
+ [Yarn](https://yarnpkg.com/)
+ [Google Maps API](https://developers.google.com/maps/documentation/javascript/tutorial)
+ [Foursquare API](https://developer.foursquare.com/)
+ [Font Awesome](https://github.com/FortAwesome/react-fontawesome)
+ [React-Debounce-Input](https://github.com/nkbt/react-debounce-input)
 
 ## License
 [MIT](https://github.com/nybragaramos/neighborhood-map/blob/master/LICENSE)
