@@ -33,12 +33,16 @@
   cursor: pointer;
 }
 
-.options-button:hover {
+.options-button:hover,
+.options-button:focus,
+.options-button:active {
   background-color: #D61A8E;
   color: #FAFAFA;
 }
 
-.options-button.clicked:hover {
+.options-button.clicked:hover,
+.options-button.clicked:focus,
+.options-button.clicked:active{
   background-color: #D61A8E;
   color: #FAFAFA;
 }
