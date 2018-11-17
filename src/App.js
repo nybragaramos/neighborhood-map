@@ -51,10 +51,13 @@ class App extends Component {
   
   // Load Map with restaurants markers
   mapLoad(map) {
-    this.setState({map: map, infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})});
+    if(map !== null) {
+      this.setState({map: map, infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})});
     
-    //after loadding map search by category passing categoryID from Restaurants
-    this.searchByCategory('4bf58dd8d48988d1c4941735', 'restaurants');
+      //after loadding map search by category passing categoryID from Restaurants
+      this.searchByCategory('4bf58dd8d48988d1c4941735', 'restaurants');
+
+    }
   }
 
   // Handle fetch request erros
@@ -69,13 +72,15 @@ class App extends Component {
   // different Toast message depending on the error 
   handleToasts(error) {
     if(error.toString().includes('403')){
-      this.showToast('Unable to responde! Daily Limit Reached');
+      this.showToast('Unable to responde! Daily Limit Reached!');
     } else if(error.toString().includes('500')) {
-      this.showToast('Unable to connect with Server! Please try again');
+      this.showToast('Unable to connect with Server! Please try again.');
     } else if (error.toString().includes('Failed to fetch')) {
-      this.showToast('Please check your Internet Connection');
+      this.showToast('Please check your Internet Connection.');
+    } else if (this.state.map === null) {
+      this.showToast('Map Error! Please try to reload the page.');
     } else {
-      this.showToast('Error! Please try again');
+      this.showToast('Error! Please try again.');
     }
   }
 
@@ -203,47 +208,51 @@ class App extends Component {
   }
 
   showSelectedMarkers() {
-    let infoWindow = this.state.infoWindow;
-    infoWindow.close();
-    this.setState({infoWindow: infoWindow});
+    if(this.state.map != null) {
+      let infoWindow = this.state.infoWindow;
+      infoWindow.close();
+      this.setState({infoWindow: infoWindow});
 
-    let markers = this.state.markers.slice() 
-    let searched = this.state.showVenues.slice();
+      let markers = this.state.markers.slice() 
+      let searched = this.state.showVenues.slice();
 
-    //show only the markers from the venues that are in the search list
-    markers = markers.map(marker => {
-      const value = searched.find(function (element) {
-      return (element.venue.id === marker.id) ? element : null;
-      });
-      if(value) {
-        marker.setMap(this.state.map);
-      } else {
-        marker.setMap(null);
-      }
-      return marker;
-    }) 
-    this.setState({markers: markers});
+      //show only the markers from the venues that are in the search list
+      markers = markers.map(marker => {
+        const value = searched.find(function (element) {
+        return (element.venue.id === marker.id) ? element : null;
+        });
+        if(value) {
+          marker.setMap(this.state.map);
+        } else {
+          marker.setMap(null);
+        }
+        return marker;
+      }) 
+      this.setState({markers: markers});
+    }
   }
 
   showAllMarkers() {
-    let infoWindow = this.state.infoWindow;
-    infoWindow.close();
-    this.setState({infoWindow: infoWindow});
+    if(this.state.map !== null) {
+      let infoWindow = this.state.infoWindow;
+      infoWindow.close();
+      this.setState({infoWindow: infoWindow});
 
-    let markers = this.state.markers.slice();
+      let markers = this.state.markers.slice();
     
-    const noMap = markers.filter(marker => marker.getMap() === null);
+      const noMap = markers.filter(marker => marker.getMap() === null);
 
-    //markers with null map need to be add to the map
-    if(noMap.length > 0){
-      markers = markers.map(marker => {
-        marker.setMap(this.state.map);
-        return marker;
-      })
-      this.setState({markers: markers, showVenues: this.state.venues, query:''});
-    } else {
-      this.setState({query:''});
-    }    
+      //markers with null map need to be add to the map
+      if(noMap.length > 0){
+        markers = markers.map(marker => {
+          marker.setMap(this.state.map);
+          return marker;
+        })
+        this.setState({markers: markers, showVenues: this.state.venues, query:''});
+      } else {
+        this.setState({query:''});
+      }  
+    } 
   }
 
   configInfoWindow(marker, content) {
@@ -270,6 +279,8 @@ class App extends Component {
     //if wasn't found then do a online request
     if(!details){
 
+      marker.setAnimation(window.google.maps.Animation.BOUNCE);
+
       let url = new URL(`https://api.foursquare.com/v2/venues/${content.id}`);
       url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, v: "20181025", locale:'en'});
 
@@ -280,18 +291,21 @@ class App extends Component {
         this.setState(previousState => ({
           details: [...previousState.details, data.response.venue],
         }));
-        // send the information to set the content of the infowindow
         this.setContentInfoWindow(infoWindow, data.response.venue);
+        setTimeout(function() {
+          marker.setAnimation(null);
+          infoWindow.open(marker.map, marker);
+        }, 800);        
       }).catch(error => {
-        this.handleToasts(error);
-
         //show info indow with error coment
         // this.setContentInfoWindow(infoWindow,null, 'Foursquare error. Please try again.');      
         
         //Animate the marker´but dont open info window
         marker.setAnimation(window.google.maps.Animation.BOUNCE);
+        const that=this;
         setTimeout(function() {
           marker.setAnimation(null);
+          that.handleToasts(error);
         }, 1200);
       });
     } else {
@@ -353,6 +367,7 @@ class App extends Component {
       content += `<p class='opening-days'>${time.days}</p>
       <p class='opening-hours'>${time.open[0].renderedTime}</p>`;
     }
+
   }
 
   drawerToggleClickHandler() {
