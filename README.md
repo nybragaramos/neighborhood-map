@@ -22,7 +22,8 @@ The goal of the project was to use React, the Google Maps API, plus data from a 
 [CLICK TO TRY IT OUT!](https://nybragaramos.github.io/neighborhood-map/)
 
 ## Important
-This application uses API's from Google maps and Foursquare, and developer free plans are only limited to a certain number of requests per day so you may experience not being able to load content. Note: The service worker is only functional in production mode (try it on the hosted site).
+ * This application uses API's from Google maps and Foursquare, and developer free plans are only limited to a certain number of requests per day so you may experience not being able to load content. 
+ * The service worker is only functional in production mode hat is deploying to the github pages(Please try it on the hosted [site](https://nybragaramos.github.io/neighborhood-map/)).
 
 ## Project Tools
 [Create ReactApp](https://github.com/facebook/create-react-app)<br />
@@ -30,7 +31,8 @@ This application uses API's from Google maps and Foursquare, and developer free 
 [Google Maps API](https://developers.google.com/maps/documentation/javascript/tutorial)<br />
 [Foursquare API](https://developer.foursquare.com/)<br />
 [Font Awesome](https://github.com/FortAwesome/react-fontawesome)<br />
-[React-Debounce-Input](https://github.com/nkbt/react-debounce-input)
+[React-Debounce-Input](https://github.com/nkbt/react-debounce-input)<br />
+[gh-pages](https://github.com/tschaub/gh-pages)
 
 ## License
 [MIT](https://github.com/nybragaramos/neighborhood-map/blob/master/LICENSE)
