@@ -8,7 +8,7 @@ import Backdrop from './components/backdrop/Backdrop';
 import SearchList from './components/searchList/SearchList';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab, faFoursquare } from '@fortawesome/free-brands-svg-icons'
-import { faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
+import { faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 
 
 //Initialize Foursquare parameteters for search
@@ -427,5 +427,5 @@ class App extends Component {
   }
 }
 
-library.add(fab, faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone, faFoursquare);
+library.add(fab, faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faExclamationTriangle, faFoursquare);
 export default App;

@@ -1,5 +1,6 @@
 import React from 'react';
 import './Toast.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const toast = props => {
 
@@ -9,7 +10,7 @@ const toast = props => {
   }
 
 	return (
-		<div className={toastClass} role='alert'><p>{props.message}</p></div>
+		<div className={toastClass} role='alert'><FontAwesomeIcon icon="exclamation-triangle" /><p>{props.message}</p></div>
 	);
 }	
 
