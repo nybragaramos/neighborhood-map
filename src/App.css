@@ -33,7 +33,7 @@ h1, h2, h3 {
 }
 
 .info-window{
-  min-width: 207px;
+  width: 207px;
   height: fit-content;
 }
 

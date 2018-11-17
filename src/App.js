@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import Map from './components/map/Map';
 import Toolbar from './components/toolbar/Toolbar';
+import Toast from './components/toast/Toast';
 import SideDrawer from './components/sideDrawer/SideDrawer';
 import Backdrop from './components/backdrop/Backdrop';
 import SearchList from './components/searchList/SearchList';
@@ -9,6 +10,8 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab, faFoursquare } from '@fortawesome/free-brands-svg-icons'
 import { faSun, faSuitcase, faCocktail, faUtensils, faInfoCircle, faSearch, faBars, faPhone} from '@fortawesome/free-solid-svg-icons';
 
+
+//Initialize Foursquare parameteters for search
 const FOURSQUARE_API = 'https://api.foursquare.com/v2/venues/explore?';
 const CLIENT_ID = "WCSYL05LCDFT1FZUPPCKTTTAGXHIJW35BSM0ZB2ASSN1AS30"; 
 const CLIENT_SECRET = "XWO5JGWXXJCJEBHAGHIQEAPCD02Y5THUQLZDLLG1NJW2RUKU";
@@ -30,32 +33,60 @@ class App extends Component {
     this.listDisplayHandler = this.listDisplayHandler.bind(this);
 
     this.state = {
-      venuesByCategories: {},
-      venues: [],
-      showVenues: [],
-      details: [],
-      markers: [],
+      venuesByCategories: {},   //load all venues devided by categories(restaurats, nightlife...)
+      venues: [],               //load the venues from chosen category
+      showVenues: [],           //controll the showing venues from all venues of one category
+      details: [],              //save the details from venues that ware already clicked
+      markers: [],              //control the showing markers
       map: null,
-      sideDrawerOpen: false,
+      sideDrawerOpen: false,    //control the state from sidedrawer menu
       infoWindow: null,
-      showList: false,
+      showList: false,          //contro the state from the search list
       query: '',
-      category: 'restaurants'
+      category: 'restaurants',  //the actual showing category
+      showToast: false,
+      msgToast: ''   
     };
   }
   
   // Load Map with restaurants markers
   mapLoad(map) {
     this.setState({map: map, infoWindow: new window.google.maps.InfoWindow({maxWidth: 350, maxHeight: 400})});
+    
+    //after loadding map search by category passing categoryID from Restaurants
     this.searchByCategory('4bf58dd8d48988d1c4941735', 'restaurants');
   }
 
   // Handle fetch request erros
   handleRequestErrors(response) {
     if (!response.ok) {
-        throw Error(response.statusText);
+      console.log(response);
+        throw Error(response.status);
     }
     return response.json();
+  }
+
+  // different Toast message depending on the error 
+  handleToasts(error) {
+    if(error.toString().includes('403')){
+      this.showToast('Unable to responde! Daily Limit Reached');
+    } else if(error.toString().includes('500')) {
+      this.showToast('Unable to connect with Server! Please try again');
+    } else if (error.toString().includes('Failed to fetch')) {
+      this.showToast('Please check your Internet Connection');
+    } else {
+      this.showToast('Error! Please try again');
+    }
+  }
+
+  showToast (msg) {
+    this.setState({
+      showToast: true, msgToast: msg
+    }, () => {
+      setTimeout(() =>
+        this.setState({ showToast: false })
+    ,  3500)
+    })
   }
 
   // order venues for the first letter of the name
@@ -74,8 +105,11 @@ class App extends Component {
 
   // Create new markers
   createMarkers(){
+
+    //create bounds for the map with the actual markers
     const bounds = new window.google.maps.LatLngBounds();
     let map = this.state.map;
+
     let ms = this.state.venues.map(content => {
       // Create A Marker
       const marker = new window.google.maps.Marker({
@@ -93,6 +127,7 @@ class App extends Component {
       })
       return marker;
     });
+
     map.fitBounds(bounds);
     this.setState({markers: ms, map:map});
   }
@@ -123,15 +158,18 @@ class App extends Component {
     }, 0);
   }
 
-  /*Handle the click at the venues list*/
+  // Handle the click at the venues list
   handleListClick(id) {
 
+    //close the list
     this.backdropList();
     
     this.clearMarkers();
+
     let markers = this.state.markers.slice();
     let markerIndex;
-    /*search marker with the designated id*/
+    
+    // search marker with the designated id
     for(markerIndex=0; markerIndex<markers.length; markerIndex++){
       if(markers[markerIndex].id === id){
         break;
@@ -148,17 +186,18 @@ class App extends Component {
     }
   }
 
-  handleSearchByName (event){
-    if(event === ''){
+  handleSearchByName (query){
+    if(query === ''){   //with empty query show all venues
       this.setState({showVenues: this.state.venues, query:''});
     } else {
+      //only show the venues that pass the uery filter
       let showVenues = this.state.showVenues.slice();
       showVenues = showVenues.filter(value => {
         const name = value.venue.name.toUpperCase();
-        const searchName = event.toUpperCase();
+        const searchName = query.toUpperCase();
         return name.includes(searchName);
       });
-      this.setState({showVenues: showVenues, query:event});
+      this.setState({showVenues: showVenues, query:query});
     }
     this.showSelectedMarkers();
   }
@@ -211,73 +250,94 @@ class App extends Component {
     
     let infoWindow = this.state.infoWindow;
 
+    //close with there is any info window open
     infoWindow.close();
+    //reset the content
     infoWindow.setContent('');
+    //change the marker to the new
     infoWindow.marker = marker;
 
     // Make sure the marker property is cleared if the infowindow is closed.
     infoWindow.addListener('closeclick',function(){
       infoWindow.setMarker = null;
     });
-
+    
+    //serach the details in the state variable 
     const details = this.state.details.find(function (element) {
         return (element.id === content.id);
     });
-      
+    
+    //if wasn't found then do a online request
     if(!details){
+
       let url = new URL(`https://api.foursquare.com/v2/venues/${content.id}`);
       url.search = new URLSearchParams({client_id: CLIENT_ID, client_secret: CLIENT_SECRET, v: "20181025", locale:'en'});
 
       fetch(url)
       .then(this.handleRequestErrors)
       .then(data => {
+        // add the new details information to the state
         this.setState(previousState => ({
           details: [...previousState.details, data.response.venue],
         }));
+        // send the information to set the content of the infowindow
         this.setContentInfoWindow(infoWindow, data.response.venue);
       }).catch(error => {
-        console.log('Request failed Details', error)
-        this.setContentInfoWindow(infoWindow,null, error);
+        this.handleToasts(error);
+
+        //show info indow with error coment
+        // this.setContentInfoWindow(infoWindow,null, 'Foursquare error. Please try again.');      
+        
+        //Animate the marker´but dont open info window
+        marker.setAnimation(window.google.maps.Animation.BOUNCE);
+        setTimeout(function() {
+          marker.setAnimation(null);
+        }, 1200);
       });
     } else {
       this.setContentInfoWindow(infoWindow,details);
+      //Animate the marker
+      marker.setAnimation(window.google.maps.Animation.BOUNCE);
+      setTimeout(function() {
+        marker.setAnimation(null);
+        infoWindow.open(marker.map, marker);
+       }, 1200);
+      this.setState({infoWindow: infoWindow});
     }
       
-    //Animate the marker
-    marker.setAnimation(window.google.maps.Animation.BOUNCE);
-    setTimeout(function() {
-      marker.setAnimation(null);
-      infoWindow.open(marker.map, marker);
-    }, 1200);
-    this.setState({infoWindow: infoWindow});
+    
+    
 
   }
 
   setContentInfoWindow(infoWindow, details, error) {
     let content = '';
     if(!details){
-      content+= `<p>${error}</p>`
+      content+= `<div class='info-window'><p>${error}</p></div>`
     } 
     else {
+
       let photo = '';
       if(details.bestPhoto) {
         photo= details.bestPhoto.prefix + '208x120' + details.bestPhoto.suffix
       } else {
         photo= 'https://via.placeholder.com/208x120.png?text=No+Image'
+        // photo = '../noImageDetails.jpg'
       }
 
       content = `<div class='info-window'>
-                 <img src=${photo} alt=´${details.name} provided by foursquare´>
+                 <img src=${photo} alt='${details.name} provided by foursquare'>
                  <h2>${details.name}</h2>`;
 
       if(details.categories){
         content += `<p>${details.categories[0].shortName}</p>`
       }
-      content += `<p>${details.location.address}</p>`
+      if(details.location.address){
+        content += `<p>${details.location.address}</p>`
+      }
       if(details.contact.phone){
         content += `<p>${details.contact.phone}</p>`
       }
-
       if(details.hours){
         const timeframes=details.hours.timeframes;
         content += `<div class='opening'>`;
@@ -285,7 +345,6 @@ class App extends Component {
         timeframes.forEach(openingHours);
         content += `</div>`
       }
-
       content += `</div>`
     }
 
@@ -339,7 +398,7 @@ class App extends Component {
           this.setState({venuesByCategories: venuesByCategories});
         })
         .catch(error => {
-          console.log('Request By Category Fail', error)
+          this.handleToasts(error);
         });
     }
   }
@@ -361,6 +420,7 @@ class App extends Component {
         <main>
           <SearchList values={this.state.showVenues} handleListClick={this.handleListClick} show={this.state.showList}/>
           <Map id="map" options={{center: {lat: 51.961773, lng: 7.621385}, zoom: 14, mapTypeControl: false}} mapLoad= {this.mapLoad}/>
+          <Toast show={this.state.showToast} message={this.state.msgToast}/>
         </main>
       </div>
     );
